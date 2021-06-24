@@ -59,19 +59,3 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     }
     return true;
 }
-
-const matrix_row_t matrix_mask[MATRIX_ROWS] =
-{
-  0xFDFD,
-  0xFDFD,
-  0xFDFD,
-  0xFDFD,
-  0xFDFD,
-  0xFDFD,
-  0xFFFF,
-  0xFFFF,
-  0xFFFF,
-  0xFFFF,
-  0xFFFF,
-  0xFFFF,
-};
