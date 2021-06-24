@@ -30,3 +30,20 @@ void eeconfig_init_kb(void) {
     eeconfig_update_kb(0);
     eeconfig_init_user();
 }
+
+const matrix_row_t matrix_mask[MATRIX_ROWS] =
+{
+//    0987654321
+    0b0111111101,
+    0b0111111101,
+    0b0111111101,
+    0b0111111101,
+    0b0111111101,
+    0b0111111101,
+    0b1111111111,
+    0b1111111111,
+    0b1111111111,
+    0b1111111111,
+    0b1111111111,
+    0b1111111111,
+};
