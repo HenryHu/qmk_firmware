@@ -29,7 +29,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
   [1] = LAYOUT_all(
-    RESET,               RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD, RGB_VAI, RGB_VAD,          _______, _______,          _______, _______, KC_MSEL, KC_EJCT, KC_SLEP, KC_PWR,  KC_WAKE,
+    RESET,               RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD, RGB_VAI, RGB_VAD,          _______, _______,          _______, NK_TOGG, KC_MSEL, KC_EJCT, KC_SLEP, KC_PWR,  KC_WAKE,
     RGB_TOG,    _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,            KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______, _______, KC_MPLY, KC_MPRV,
     RGB_MOD,    _______, KC_BTN1, KC_MS_U, KC_BTN2, KC_BTN3, _______,                   _______, _______, _______, _______, KC_PSCR, KC_BRID, KC_BRIU, KC_NLCK, KC_MRWD, KC_MFFD,
     MACRO3,     _______, KC_MS_L, KC_MS_D, KC_MS_R, KC_BTN4, KC_BTN5,                   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_SLCK, KC_WSCH, _______, KC_PENT, KC_MSTP, KC_MNXT,
@@ -98,13 +98,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-void matrix_scan_user(void) {
-    if (is_alt_tab_active && timer_elapsed(alt_tab_timer) > 300) {
-        is_alt_tab_active = false;
-        unregister_code(KC_LALT);
-    }
-}
-
 char serialBuffer[64];
 int serialPtr = 0;
 
@@ -120,15 +113,56 @@ void cmd_ver(char* buf, int size) {
 }
 
 void cmd_uptime(char* buf, int size) {
-    const uint32_t now = timer_read32();
-    itoa(now / 1000, buf, 10);
+    const div_t now = div(timer_read32(), 1000);
+    itoa(now.quot, buf, 10);
     strcat(buf, "s ");
-    itoa(now % 1000, buf + strlen(buf), 10);
+    itoa(now.rem, buf + strlen(buf), 10);
     strcat(buf, "ms");
 }
 
+void append_attr_state(char* buf, const char* name, const bool value) {
+    strcat(buf, name);
+    strcat(buf, ": ");
+    strcat(buf, value ? "YES" : "NO");
+}
+
 void cmd_info(char* buf, int size) {
-    strcat(buf, "Henry's keyboard " QMK_KEYBOARD "/" QMK_KEYMAP);
+    strcat(buf, "Henry's keyboard " QMK_KEYBOARD "/" QMK_KEYMAP "\r\n");
+    strcat(buf, "> " STR(MANUFACTURER) " " STR(PRODUCT) "\r\n");
+    strcat(buf, "> ");
+    append_attr_state(buf, "nkro", keymap_config.nkro);
+}
+
+void cmd_reset(char* buf, int size) {
+    serial_send("Bye!\r\n");
+    bootloader_jump();
+}
+
+void cmd_rgb(char* buf, int size) {
+    if (!rgblight_is_enabled()) {
+        strcat(buf, "RGB is OFF");
+        return;
+    }
+    strcat(buf, "mode: ");
+    itoa(rgblight_get_mode(), buf + strlen(buf), 10);
+    strcat(buf, " hue: ");
+    itoa(rgblight_get_hue(), buf + strlen(buf), 10);
+    strcat(buf, " sat: ");
+    itoa(rgblight_get_sat(), buf + strlen(buf), 10);
+    strcat(buf, " val: ");
+    itoa(rgblight_get_val(), buf + strlen(buf), 10);
+    strcat(buf, " speed: ");
+    itoa(rgblight_get_speed(), buf + strlen(buf), 10);
+}
+
+int timerStart = -1;
+int timerLimit = -1;
+
+void cmd_timer(char* buf, int size) {
+    int arg = atoi(serialBuffer + 6);
+    timerStart = timer_read32();
+    timerLimit = arg;
+    strcat(buf, "Timer ARMED");
 }
 
 void cmd_unknown(char* buf, int size) {
@@ -145,11 +179,16 @@ typedef struct command {
     void (*handler) (char* buf, int size);
 } command_t;
 
+#define DEFINE_COMMAND(name) {#name, cmd_##name}
+
 command_t commands[] = {
-    {"ver", cmd_ver},
-    {"uptime", cmd_uptime},
-    {"info", cmd_info},
-    {"help", cmd_help},
+    DEFINE_COMMAND(ver),
+    DEFINE_COMMAND(uptime),
+    DEFINE_COMMAND(info),
+    DEFINE_COMMAND(help),
+    DEFINE_COMMAND(rgb),
+    DEFINE_COMMAND(timer),
+    DEFINE_COMMAND(reset),
 };
 
 const int numCommands = sizeof(commands) / sizeof(command_t);
@@ -164,7 +203,7 @@ void cmd_help(char* buf, int size) {
 
 void handle_serial_command(char* buf, int size) {
     for (int i = 0; i < numCommands; ++i) {
-        if (strncmp(serialBuffer, commands[i].cmd, sizeof(serialBuffer)) == 0) {
+        if (strncmp(serialBuffer, commands[i].cmd, strlen(commands[i].cmd)) == 0) {
             return (*commands[i].handler)(buf, size);
         }
     }
@@ -172,9 +211,11 @@ void handle_serial_command(char* buf, int size) {
 }
 
 void process_serial_command(void) {
-    char buf[64];
-    buf[63] = 0;
-    strcpy(buf, "> ");
+    char buf[256];
+    buf[0] = '>';
+    buf[1] = ' ';
+    buf[2] = 0;
+    buf[sizeof(buf) - 1] = 0;
     handle_serial_command(buf + 2, sizeof(buf) - 2);
     strcat(buf, "\r\n");
     serial_send(buf);
@@ -200,6 +241,17 @@ void virtser_recv(uint8_t in) {
             if (serialPtr >= sizeof(serialBuffer) - 1) return;
             serialBuffer[serialPtr++] = in;
             virtser_send(in);
+    }
+}
+
+void matrix_scan_user(void) {
+    if (is_alt_tab_active && timer_elapsed(alt_tab_timer) > 300) {
+        is_alt_tab_active = false;
+        unregister_code(KC_LALT);
+    }
+    if (timerLimit != -1 && timer_elapsed(timerStart) > timerLimit) {
+        serial_send("> TIMER!\a\r\n");
+        timerLimit = -1;
     }
 }
 
