@@ -213,16 +213,32 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         }
     } else */
     if (index == RIGHT_HALF_ENC1) {
-        if (clockwise) {
-            tap_code(KC_VOLU);
+        if (IS_LAYER_ON(1)) {
+            if (clockwise) {
+                rgblight_increase_hue();
+            } else {
+                rgblight_decrease_hue();
+            }
         } else {
-            tap_code(KC_VOLD);
+            if (clockwise) {
+                tap_code(KC_VOLU);
+            } else {
+                tap_code(KC_VOLD);
+            }
         }
     } else if (index == RIGHT_HALF_ENC2) {
-        if (clockwise) {
-            tap_code16(C(KC_PLUS));
+        if (IS_LAYER_ON(1)) {
+            if (clockwise) {
+                rgblight_step();
+            } else {
+                rgblight_step_reverse();
+            }
         } else {
-            tap_code16(C(KC_MINUS));
+            if (clockwise) {
+                tap_code16(C(KC_EQL));
+            } else {
+                tap_code16(C(KC_MINUS));
+            }
         }
     }
     return true;
