@@ -412,6 +412,7 @@ static void debug_tapping_key(void) {
  * FIXME: Needs docs
  */
 static void debug_waiting_buffer(void) {
+    /*
     debug("{ ");
     for (uint8_t i = waiting_buffer_tail; i != waiting_buffer_head; i = (i + 1) % WAITING_BUFFER_SIZE) {
         debug("[");
@@ -421,6 +422,7 @@ static void debug_waiting_buffer(void) {
         debug(" ");
     }
     debug("}\n");
+    */
 }
 
 #endif
