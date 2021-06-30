@@ -24,7 +24,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     S(KC_INS),  KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,             KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, KC_EQL,  KC_DEL,  KC_BSPC, KC_INS,  KC_PGUP,
     S(C(KC_T)), KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                      KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC, KC_BSLS, KC_HOME, KC_END,
     MACRO1,     MO(1),   KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                      KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, KC_NUHS, KC_ENT,  KC_DEL,  KC_PGDN,
-    MACRO2,     KC_LSFT, KC_NUBS, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,             KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_SFTENT,                 KC_UP,
+    MACRO2,     KC_LSFT, KC_NUBS, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,             KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, RSFT_T(KC_ENTER),                 KC_UP,
     ALT_TAB,    KC_LCTL, KC_CAPS, KC_LGUI, KC_LALT, KC_SPC,  KC_SPC,                    MO(1),   KC_SPC,  MO(2),   KC_RGUI,                   KC_RCTL, KC_LEFT, KC_DOWN, KC_RGHT
   ),
 
@@ -51,8 +51,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 bool is_alt_tab_active = false;
 uint16_t alt_tab_timer = 0;
+uint32_t last_key_down_time = 0;
 
 bool process_key_down(uint16_t keycode, keyrecord_t *record) {
+    last_key_down_time = timer_read32();
     switch (keycode) {
         case ALT_TAB:
             if (!is_alt_tab_active) {
@@ -69,19 +71,19 @@ bool process_key_down(uint16_t keycode, keyrecord_t *record) {
 bool process_key_up(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case MACRO1:
-            SEND_STRING(MACRO1_STRING);
+            SEND_STRING(STR(MACRO1_STRING));
             break;
         case MACRO2:
-            SEND_STRING(MACRO2_STRING);
+            SEND_STRING(STR(MACRO2_STRING));
             break;
         case MACRO3:
-            SEND_STRING(MACRO3_STRING);
+            SEND_STRING(STR(MACRO3_STRING));
             break;
         case MACRO4:
-            SEND_STRING(MACRO4_STRING);
+            SEND_STRING(STR(MACRO4_STRING));
             break;
         case MACRO5:
-            SEND_STRING(MACRO5_STRING);
+            SEND_STRING(STR(MACRO5_STRING));
             break;
         case ALT_TAB:
             unregister_code(KC_TAB);
@@ -98,6 +100,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
+char statusLine[22];
+char infoLine[18];
 char serialBuffer[64];
 int serialPtr = 0;
 
@@ -114,9 +118,9 @@ void cmd_ver(char* buf, int size) {
 
 void cmd_uptime(char* buf, int size) {
     const div_t now = div(timer_read32(), 1000);
-    itoa(now.quot, buf, 10);
+    utoa(now.quot, buf, 10);
     strcat(buf, "s ");
-    itoa(now.rem, buf + strlen(buf), 10);
+    utoa(now.rem, buf + strlen(buf), 10);
     strcat(buf, "ms");
 }
 
@@ -144,15 +148,15 @@ void cmd_rgb(char* buf, int size) {
         return;
     }
     strcat(buf, "mode: ");
-    itoa(rgblight_get_mode(), buf + strlen(buf), 10);
+    utoa(rgblight_get_mode(), buf + strlen(buf), 10);
     strcat(buf, " hue: ");
-    itoa(rgblight_get_hue(), buf + strlen(buf), 10);
+    utoa(rgblight_get_hue(), buf + strlen(buf), 10);
     strcat(buf, " sat: ");
-    itoa(rgblight_get_sat(), buf + strlen(buf), 10);
+    utoa(rgblight_get_sat(), buf + strlen(buf), 10);
     strcat(buf, " val: ");
-    itoa(rgblight_get_val(), buf + strlen(buf), 10);
+    utoa(rgblight_get_val(), buf + strlen(buf), 10);
     strcat(buf, " speed: ");
-    itoa(rgblight_get_speed(), buf + strlen(buf), 10);
+    utoa(rgblight_get_speed(), buf + strlen(buf), 10);
 }
 
 int timerStart = -1;
@@ -165,11 +169,26 @@ void cmd_timer(char* buf, int size) {
     strcat(buf, "Timer ARMED");
 }
 
+void cmd_speed(char* buf, int size) {
+    int arg = atoi(serialBuffer + 6);
+    rgblight_set_speed(arg);
+    strcat(buf, "RGB Speed set to ");
+    itoa(arg, buf + strlen(buf), 10);
+}
+
 void cmd_unknown(char* buf, int size) {
     strcat(buf, "Unknown command: '");
     strcat(buf, serialBuffer);
     strcat(buf, "', len: ");
-    itoa(strlen(serialBuffer), buf + strlen(buf), 10);
+    utoa(strlen(serialBuffer), buf + strlen(buf), 10);
+}
+
+void cmd_status(char* buf, int size) {
+    int i;
+    for (i = 0; i < sizeof(statusLine) && serialBuffer[i + 7]!= 0; ++i) {
+        statusLine[i] = serialBuffer[i + 7];
+    }
+    for (; i < sizeof(statusLine); ++i) statusLine[i] = ' ';
 }
 
 void cmd_help(char* buf, int size);
@@ -189,6 +208,8 @@ command_t commands[] = {
     DEFINE_COMMAND(rgb),
     DEFINE_COMMAND(timer),
     DEFINE_COMMAND(reset),
+    DEFINE_COMMAND(speed),
+    DEFINE_COMMAND(status),
 };
 
 const int numCommands = sizeof(commands) / sizeof(command_t);
@@ -294,4 +315,133 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         }
     }
     return true;
+}
+
+void render_animation(uint8_t col, uint8_t row, int frame) {
+    const uint8_t start = 0x80;
+    const uint8_t lineLen = 0x20;
+    for (uint8_t x = 0; x < 3; ++x) {
+        oled_set_cursor(col, row + x);
+        for (uint8_t y = 0; y < 4; ++y) {
+            oled_write_char(start + x * lineLen + y + frame * 4, false);
+        }
+    }
+}
+
+void render_logo(uint8_t col, uint8_t row) {
+	static const char PROGMEM qmk_logo[][5] = {
+		{ 0x80, 0x81, 0x82, 0x83, 0x00},
+		{ 0xA0, 0xA1, 0xA2, 0xA3, 0x00},
+		{ 0xC0, 0xC1, 0xC2, 0xC3, 0x00},
+	};
+	oled_set_cursor(col, row);
+    oled_write_P(qmk_logo[0], false);
+	oled_set_cursor(col, row + 1);
+    oled_write_P(qmk_logo[1], false);
+	oled_set_cursor(col, row + 2);
+    oled_write_P(qmk_logo[2], false);
+}
+
+int frame = 0;
+int last_wpm = 0;
+uint32_t last_frame_time = 0;
+bool anime_pause = false;
+int frame_time = 500;
+
+#define TOTAL_FRAMES 8
+
+enum NekoState {
+	IDLE = 0,
+    FLAP = 1,
+    SCRATCH = 2,
+    SLEEP = 3,
+};
+
+enum NekoState neko_state = IDLE;
+
+void neko_sleep(void) {
+    frame = frame == 0 ? 6 : 0;
+    frame_time = 500;
+}
+
+void neko_scratch(void) {
+    frame = frame == 2 ? 3 : 2;
+    frame_time = 100;
+}
+
+void neko_flap(void) {
+    frame = frame == 1 ? 7 : 1;
+    frame_time = 200;
+}
+
+void neko_idle(void) {
+    frame = 1;
+    frame_time = 1000;
+}
+
+void neko_awake(void) {
+    frame = 4;
+    frame_time = 1000;
+}
+
+void pick_frame(uint32_t idle_time) {
+    if (idle_time > 30000) {
+        neko_sleep();
+        return;
+    } else if (idle_time > 15000) {
+        neko_scratch();
+        return;
+    } else if (idle_time > 5000) {
+        neko_flap();
+        return;
+    } else if (idle_time > 1000 && idle_time < 5000) {
+        neko_idle();
+        return;
+    }
+    neko_awake();
+}
+
+void oled_task_user(void) {
+    uint32_t idle_time = timer_elapsed32(last_key_down_time);
+    if (idle_time > 60000) {
+        oled_off();
+        return;
+    }
+    if (IS_LAYER_ON(1)) {
+        oled_write_P(PSTR("HYPER "), false);
+    } else {
+        oled_write_P(PSTR("      "), false);
+    }
+    led_t led_state = host_keyboard_led_state();
+    oled_write_P(led_state.caps_lock ? PSTR("CAP") : PSTR("   "),
+            led_state.caps_lock);
+    oled_write_P(led_state.scroll_lock ? PSTR("SCR") : PSTR("   "),
+            led_state.scroll_lock);
+    oled_write_P(led_state.num_lock ? PSTR("NUM\n") : PSTR("   \n"),
+            led_state.num_lock);
+    oled_write_P(get_mods() & MOD_MASK_SHIFT ? PSTR("SFT") : PSTR("   "), false);
+    oled_write_P(get_mods() & MOD_MASK_CTRL ? PSTR(" CTL") : PSTR("    "), false);
+    oled_write_P(get_mods() & MOD_MASK_ALT ? PSTR(" ALT") : PSTR("    "), false);
+    oled_write_P(PSTR("\n"), false);
+
+    anime_pause = get_mods() & MOD_MASK_CTRL;
+
+    // render_logo(17, 0);	
+
+    if (!anime_pause) {
+        uint32_t now = timer_read32();
+        if (now > last_frame_time + frame_time || idle_time < 1000) {
+            last_frame_time = now;
+            pick_frame(idle_time);
+        }
+    }
+    render_animation(17, 0, frame);
+
+    oled_set_cursor(0, 2);
+    statusLine[sizeof(infoLine) - 1] = 0;
+    oled_write(infoLine, false);
+
+    oled_set_cursor(0, 3);
+    statusLine[sizeof(statusLine) - 1] = 0;
+    oled_write(statusLine, false);
 }
