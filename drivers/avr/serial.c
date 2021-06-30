@@ -25,7 +25,7 @@
 #    endif
 // if using ATmega32U4/2, AT90USBxxx I2C, can not use PD0 and PD1 in soft serial.
 #    if defined(__AVR_ATmega16U4__) || defined(__AVR_ATmega32U4__) || defined(__AVR_AT90USB646__) || defined(__AVR_AT90USB647__) || defined(__AVR_AT90USB1286__) || defined(__AVR_AT90USB1287__)
-#        if defined(USE_AVR_I2C) && (SOFT_SERIAL_PIN == D0 || SOFT_SERIAL_PIN == D1)
+#        if defined(USE_I2C) && (SOFT_SERIAL_PIN == D0 || SOFT_SERIAL_PIN == D1)
 #            error Using I2C, so can not use PD0, PD1
 #        endif
 #    endif
