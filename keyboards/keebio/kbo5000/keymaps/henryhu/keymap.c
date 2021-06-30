@@ -117,10 +117,10 @@ void cmd_ver(char* buf, int size) {
 }
 
 void cmd_uptime(char* buf, int size) {
-    const div_t now = div(timer_read32(), 1000);
-    utoa(now.quot, buf, 10);
+    uint32_t uptime = timer_read32();
+    utoa(uptime / 1000, buf, 10);
     strcat(buf, "s ");
-    utoa(now.rem, buf + strlen(buf), 10);
+    utoa(uptime % 1000, buf + strlen(buf), 10);
     strcat(buf, "ms");
 }
 
@@ -159,21 +159,22 @@ void cmd_rgb(char* buf, int size) {
     utoa(rgblight_get_speed(), buf + strlen(buf), 10);
 }
 
-int timerStart = -1;
+uint32_t timerStart = -1;
 int timerLimit = -1;
 
 void cmd_timer(char* buf, int size) {
-    int arg = atoi(serialBuffer + 6);
+    long arg = atol(serialBuffer + 6);
     timerStart = timer_read32();
     timerLimit = arg;
     strcat(buf, "Timer ARMED");
+    strcpy(infoLine, "Timer ARMED");
 }
 
 void cmd_speed(char* buf, int size) {
-    int arg = atoi(serialBuffer + 6);
+    long arg = atol(serialBuffer + 6);
     rgblight_set_speed(arg);
     strcat(buf, "RGB Speed set to ");
-    itoa(arg, buf + strlen(buf), 10);
+    utoa(arg, buf + strlen(buf), 10);
 }
 
 void cmd_unknown(char* buf, int size) {
@@ -189,6 +190,13 @@ void cmd_status(char* buf, int size) {
         statusLine[i] = serialBuffer[i + 7];
     }
     for (; i < sizeof(statusLine); ++i) statusLine[i] = ' ';
+}
+
+uint32_t time_base = 0;
+
+void cmd_time(char* buf, int size) {
+    uint32_t arg = atol(serialBuffer + 5);
+    time_base = arg - timer_read32() / 1000;
 }
 
 void cmd_help(char* buf, int size);
@@ -210,6 +218,7 @@ command_t commands[] = {
     DEFINE_COMMAND(reset),
     DEFINE_COMMAND(speed),
     DEFINE_COMMAND(status),
+    DEFINE_COMMAND(time),
 };
 
 const int numCommands = sizeof(commands) / sizeof(command_t);
@@ -270,8 +279,9 @@ void matrix_scan_user(void) {
         is_alt_tab_active = false;
         unregister_code(KC_LALT);
     }
-    if (timerLimit != -1 && timer_elapsed(timerStart) > timerLimit) {
+    if (timerLimit != -1 && timer_elapsed32(timerStart) > timerLimit) {
         serial_send("> TIMER!\a\r\n");
+        strcpy(infoLine, "           ");
         timerLimit = -1;
     }
 }
@@ -343,13 +353,10 @@ void render_logo(uint8_t col, uint8_t row) {
 }
 
 int frame = 0;
-int last_wpm = 0;
 uint32_t last_frame_time = 0;
-bool anime_pause = false;
 int frame_time = 500;
 
-#define TOTAL_FRAMES 8
-
+/*
 enum NekoState {
 	IDLE = 0,
     FLAP = 1,
@@ -358,6 +365,7 @@ enum NekoState {
 };
 
 enum NekoState neko_state = IDLE;
+*/
 
 void neko_sleep(void) {
     frame = frame == 0 ? 6 : 0;
@@ -401,6 +409,17 @@ void pick_frame(uint32_t idle_time) {
     neko_awake();
 }
 
+inline void get_time(char* buf) {
+    const uint32_t now = (time_base + timer_read32() / 1000) % 86400;
+    const uint32_t hour = now / 3600;
+    const uint32_t min = now % 3600 / 60;
+    if (hour < 10) strcat(buf, " ");
+    utoa(hour, buf + strlen(buf), 10);
+    strcat(buf, ":");
+    if (min < 10) strcat(buf, "0");
+    utoa(min, buf + strlen(buf), 10);
+}
+
 void oled_task_user(void) {
     uint32_t idle_time = timer_elapsed32(last_key_down_time);
     if (idle_time > 60000) {
@@ -422,9 +441,13 @@ void oled_task_user(void) {
     oled_write_P(get_mods() & MOD_MASK_SHIFT ? PSTR("SFT") : PSTR("   "), false);
     oled_write_P(get_mods() & MOD_MASK_CTRL ? PSTR(" CTL") : PSTR("    "), false);
     oled_write_P(get_mods() & MOD_MASK_ALT ? PSTR(" ALT") : PSTR("    "), false);
+
+    char buf[6];
+    get_time(buf);
+    oled_write(buf, false);
     oled_write_P(PSTR("\n"), false);
 
-    anime_pause = get_mods() & MOD_MASK_CTRL;
+	bool anime_pause = get_mods() & MOD_MASK_CTRL;
 
     // render_logo(17, 0);	
 
