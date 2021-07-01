@@ -507,10 +507,6 @@ void oled_task_user(void) {
     oled_write(infoLine, false);
 
     oled_set_cursor(0, 3);
-    memset(statusLine, ' ', sizeof(statusLine));
-    statusLine[sizeof(statusLine) - 1] = 0;
-    oled_write(statusLine, false);
-    oled_set_cursor(0, 3);
     statusLine[sizeof(statusLine) - 1] = 0;
     oled_write(statusLine, false);
 }
