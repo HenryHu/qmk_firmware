@@ -130,11 +130,8 @@ void cmd_ver(char* buf, int size) {
 }
 
 void cmd_uptime(char* buf, int size) {
-    uint32_t uptime = timer_read32();
-    utoa(uptime / 1000, buf, 10);
-    strcat(buf, "s ");
-    utoa(uptime % 1000, buf + strlen(buf), 10);
-    strcat(buf, "ms");
+    utoa(timer_read32() / 1000, buf, 10);
+    strcat(buf, "s");
 }
 
 void append_attr_state(char* buf, const char* name, const bool value) {
@@ -144,7 +141,7 @@ void append_attr_state(char* buf, const char* name, const bool value) {
 }
 
 void cmd_info(char* buf, int size) {
-    strcat(buf, "Henry's keyboard " QMK_KEYBOARD "/" QMK_KEYMAP "\r\n");
+    strcat(buf, QMK_KEYBOARD "/" QMK_KEYMAP "\r\n");
     strcat(buf, "> " STR(MANUFACTURER) " " STR(PRODUCT) "\r\n");
     strcat(buf, "> ");
     append_attr_state(buf, "nkro", keymap_config.nkro);
@@ -185,7 +182,7 @@ void cmd_speed(char* buf, int size) {
 }
 
 void cmd_unknown(char* buf, int size) {
-    strcat(buf, "Unknown command: '");
+    strcat(buf, "Unknown: '");
     strcat(buf, serialBuffer);
     strcat(buf, "', len: ");
     utoa(strlen(serialBuffer), buf + strlen(buf), 10);
