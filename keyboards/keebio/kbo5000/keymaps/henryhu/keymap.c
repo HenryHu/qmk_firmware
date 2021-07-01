@@ -52,6 +52,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 bool is_alt_tab_active = false;
 uint16_t alt_tab_timer = 0;
 uint32_t last_key_down_time = 0;
+uint32_t last_alarm_time = 0;
+
+uint32_t timerStart = -1;
+uint32_t timerLimit = -1;
+
+void setTimer(uint32_t timeout) {
+    timerStart = timer_read32();
+    timerLimit = timeout;
+}
 
 bool process_key_down(uint16_t keycode, keyrecord_t *record) {
     last_key_down_time = timer_read32();
@@ -83,7 +92,11 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
             SEND_STRING(STR(MACRO4_STRING));
             break;
         case MACRO5:
-            SEND_STRING(STR(MACRO5_STRING));
+            if (timerLimit == -1) {
+                setTimer(10000);
+            } else if (timerLimit == 10000) {
+                setTimer(60000);
+            }
             break;
         case ALT_TAB:
             unregister_code(KC_TAB);
@@ -159,21 +172,15 @@ void cmd_rgb(char* buf, int size) {
     utoa(rgblight_get_speed(), buf + strlen(buf), 10);
 }
 
-uint32_t timerStart = -1;
-int timerLimit = -1;
-
 void cmd_timer(char* buf, int size) {
-    long arg = atol(serialBuffer + 6);
-    timerStart = timer_read32();
-    timerLimit = arg;
+    setTimer(atol(serialBuffer + 6));
     strcat(buf, "Timer ARMED");
-    strcpy(infoLine, "Timer ARMED");
 }
 
 void cmd_speed(char* buf, int size) {
     long arg = atol(serialBuffer + 6);
     rgblight_set_speed(arg);
-    strcat(buf, "RGB Speed set to ");
+    strcat(buf, "Speed:");
     utoa(arg, buf + strlen(buf), 10);
 }
 
@@ -281,7 +288,7 @@ void matrix_scan_user(void) {
     }
     if (timerLimit != -1 && timer_elapsed32(timerStart) > timerLimit) {
         serial_send("> TIMER!\a\r\n");
-        strcpy(infoLine, "           ");
+        last_alarm_time = timer_read32();
         timerLimit = -1;
     }
 }
@@ -327,11 +334,32 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     return true;
 }
 
+extern uint8_t* oled_cursor;
+extern uint8_t oled_buffer[];
+extern uint8_t oled_rotation_width;
+void oled_set_cursor_raw(int x, int y) {
+	oled_cursor = &oled_buffer[y * oled_rotation_width / 8 + x];
+}
+
+const int8_t frame_offset[] = {
+    0, 2, -2, -2, -1, 2, 0, 2
+};
+
+void clear_canvas(uint8_t start_x, uint8_t x_len,
+                  uint8_t start_row, uint8_t row_count) {
+    for (uint8_t row = start_row; row < start_row + row_count; ++row) {
+        for (uint8_t x = start_x; x < start_x + x_len; ++x) {
+            oled_write_raw_byte(0, row * oled_rotation_width + x);
+        }
+    }
+}
+
 void render_animation(uint8_t col, uint8_t row, int frame) {
+    clear_canvas(col * OLED_FONT_WIDTH - 2, 4 * OLED_FONT_WIDTH + 4, row, 3);
     const uint8_t start = 0x80;
     const uint8_t lineLen = 0x20;
     for (uint8_t x = 0; x < 3; ++x) {
-        oled_set_cursor(col, row + x);
+        oled_set_cursor_raw(col * OLED_FONT_WIDTH + frame_offset[frame], (row + x) * OLED_FONT_HEIGHT);
         for (uint8_t y = 0; y < 4; ++y) {
             oled_write_char(start + x * lineLen + y + frame * 4, false);
         }
@@ -368,7 +396,7 @@ enum NekoState neko_state = IDLE;
 */
 
 void neko_sleep(void) {
-    frame = frame == 0 ? 6 : 0;
+    frame = frame == 0 ? 6 : frame == 6 ? 0 : frame == 5 ? 0 : 5;
     frame_time = 500;
 }
 
@@ -389,7 +417,7 @@ void neko_idle(void) {
 
 void neko_awake(void) {
     frame = 4;
-    frame_time = 1000;
+    frame_time = 100;
 }
 
 void pick_frame(uint32_t idle_time) {
@@ -402,7 +430,7 @@ void pick_frame(uint32_t idle_time) {
     } else if (idle_time > 5000) {
         neko_flap();
         return;
-    } else if (idle_time > 1000 && idle_time < 5000) {
+    } else if (idle_time > 100 && idle_time < 5000) {
         neko_idle();
         return;
     }
@@ -413,6 +441,7 @@ inline void get_time(char* buf) {
     const uint32_t now = (time_base + timer_read32() / 1000) % 86400;
     const uint32_t hour = now / 3600;
     const uint32_t min = now % 3600 / 60;
+	buf[0] = 0;
     if (hour < 10) strcat(buf, " ");
     utoa(hour, buf + strlen(buf), 10);
     strcat(buf, ":");
@@ -420,8 +449,20 @@ inline void get_time(char* buf) {
     utoa(min, buf + strlen(buf), 10);
 }
 
+void get_infoline(void) {
+    if (timerLimit != -1) {
+        strcpy(infoLine, "Timer: ");
+        itoa((timerLimit - timer_elapsed32(timerStart)) / 1000,
+                infoLine + strlen(infoLine), 10);
+        strcat(infoLine, "s");
+    }
+}
+
 void oled_task_user(void) {
     uint32_t idle_time = timer_elapsed32(last_key_down_time);
+    if (timer_elapsed32(last_alarm_time) < idle_time) {
+        idle_time = timer_elapsed32(last_alarm_time);
+    }
     if (idle_time > 60000) {
         oled_off();
         return;
@@ -442,7 +483,7 @@ void oled_task_user(void) {
     oled_write_P(get_mods() & MOD_MASK_CTRL ? PSTR(" CTL") : PSTR("    "), false);
     oled_write_P(get_mods() & MOD_MASK_ALT ? PSTR(" ALT") : PSTR("    "), false);
 
-    char buf[6];
+    char buf[7];
     get_time(buf);
     oled_write(buf, false);
     oled_write_P(PSTR("\n"), false);
@@ -453,7 +494,7 @@ void oled_task_user(void) {
 
     if (!anime_pause) {
         uint32_t now = timer_read32();
-        if (now > last_frame_time + frame_time || idle_time < 1000) {
+        if (now > last_frame_time + frame_time || idle_time < 100) {
             last_frame_time = now;
             pick_frame(idle_time);
         }
@@ -461,9 +502,17 @@ void oled_task_user(void) {
     render_animation(17, 0, frame);
 
     oled_set_cursor(0, 2);
-    statusLine[sizeof(infoLine) - 1] = 0;
+    memset(infoLine, ' ', sizeof(infoLine));
+    infoLine[sizeof(infoLine) - 1] = 0;
+    oled_write(infoLine, false);
+    oled_set_cursor(0, 2);
+    get_infoline();
     oled_write(infoLine, false);
 
+    oled_set_cursor(0, 3);
+    memset(statusLine, ' ', sizeof(statusLine));
+    statusLine[sizeof(statusLine) - 1] = 0;
+    oled_write(statusLine, false);
     oled_set_cursor(0, 3);
     statusLine[sizeof(statusLine) - 1] = 0;
     oled_write(statusLine, false);
