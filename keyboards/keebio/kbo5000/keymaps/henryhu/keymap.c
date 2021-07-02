@@ -3,6 +3,17 @@
 #include "version.h"
 #include "macro_strings.h"
 
+#define ENABLE_CLOCK  // 320B
+#define ENABLE_INFO   // 360B
+#define ENABLE_TIMER  // 500B
+#define ENABLE_NEKO   // 480B + font
+#define ENABLE_UPTIME //  50B
+#define ENABLE_STATUS //  80B
+#define ENABLE_OLED   // 3.5K
+#define ENABLE_SERIAL // 1.9K
+#define ENABLE_ALTTAB //  90B
+#define ENABLE_MACRO  // 380B
+
 enum encoder_names {
   LEFT_HALF_ENC = 0,
   RIGHT_HALF_ENC1 = 2,
@@ -14,7 +25,7 @@ enum custom_keycodes {
     MACRO2,
     MACRO3,
     MACRO4,
-    MACRO5,
+    SET_TIMER,
     ALT_TAB,
 };
 
@@ -34,7 +45,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     RGB_MOD,    _______, KC_BTN1, KC_MS_U, KC_BTN2, KC_BTN3, _______,                   _______, _______, _______, _______, KC_PSCR, KC_BRID, KC_BRIU, KC_NLCK, KC_MRWD, KC_MFFD,
     MACRO3,     _______, KC_MS_L, KC_MS_D, KC_MS_R, KC_BTN4, KC_BTN5,                   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_SLCK, KC_WSCH, _______, KC_PENT, KC_MSTP, KC_MNXT,
     MACRO4,     _______, _______, KC_WH_U, KC_WH_D, KC_WH_L, KC_WH_R, _______,          KC_CALC, KC_MAIL, KC_WBAK, KC_WFWD, KC_WREF,          _______,          _______,
-    MACRO5,     _______, _______, KC_RWIN, KC_RALT, _______, _______,                   MO(1),   _______, KC_APP,  _______,                   _______, _______, _______, _______
+    SET_TIMER,  _______, _______, KC_RWIN, KC_RALT, _______, _______,                   MO(1),   _______, KC_APP,  _______,                   _______, _______, _______, _______
   ),
 
   /*
@@ -49,22 +60,34 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   */
 };
 
+#ifdef ENABLE_ALTTAB
 bool is_alt_tab_active = false;
 uint16_t alt_tab_timer = 0;
+#endif
 uint32_t last_key_down_time = 0;
+#ifdef ENABLE_TIMER
 uint32_t last_alarm_time = 0;
+#endif
+uint32_t time_base = 0;
 
-uint32_t timerStart = -1;
-uint32_t timerLimit = -1;
+#ifdef ENABLE_TIMER
+uint32_t timerStart = 0;
+uint32_t timerLimit = 0;
 
-void setTimer(uint32_t timeout) {
+void setTimer(int timeout) {
     timerStart = timer_read32();
-    timerLimit = timeout;
+    timerLimit = timeout * 1000L;
 }
+
+bool timerArmed(void) {
+    return timerLimit != 0;
+}
+#endif
 
 bool process_key_down(uint16_t keycode, keyrecord_t *record) {
     last_key_down_time = timer_read32();
     switch (keycode) {
+#ifdef ENABLE_ALTTAB
         case ALT_TAB:
             if (!is_alt_tab_active) {
                 is_alt_tab_active = true;
@@ -73,34 +96,53 @@ bool process_key_down(uint16_t keycode, keyrecord_t *record) {
             alt_tab_timer = timer_read();
             register_code(KC_TAB);
             break;
+#endif
     }
     return true;
 }
 
+void send_string_lite(const char* buf, const int len) {
+    bool shift = false;
+    for (uint8_t i = 0; i < len; ++i) {
+        if (buf[i] == KC_LSFT) {
+            if (shift) unregister_code(buf[i]); else register_code(buf[i]);
+            shift = !shift;
+        } else {
+            tap_code(buf[i]);
+        }
+    }
+}
+
 bool process_key_up(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
+#ifdef ENABLE_MACRO
         case MACRO1:
-            SEND_STRING(STR(MACRO1_STRING));
+            send_string_lite(MACRO1_STRING, sizeof(MACRO1_STRING));
             break;
         case MACRO2:
-            SEND_STRING(STR(MACRO2_STRING));
+            send_string_lite(MACRO2_STRING, sizeof(MACRO2_STRING));
             break;
         case MACRO3:
-            SEND_STRING(STR(MACRO3_STRING));
+            send_string_lite(MACRO3_STRING, sizeof(MACRO3_STRING));
             break;
         case MACRO4:
-            SEND_STRING(STR(MACRO4_STRING));
+            send_string_lite(MACRO4_STRING, sizeof(MACRO4_STRING));
             break;
-        case MACRO5:
-            if (timerLimit == -1) {
-                setTimer(10000);
+#endif
+#ifdef ENABLE_TIMER
+        case SET_TIMER:
+            if (!timerArmed()) {
+                setTimer(10);
             } else if (timerLimit == 10000) {
-                setTimer(60000);
+                setTimer(60);
             }
             break;
+#endif
+#ifdef ENABLE_ALTTAB
         case ALT_TAB:
             unregister_code(KC_TAB);
             break;
+#endif
     }
     return true;
 }
@@ -113,8 +155,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
+#ifdef ENABLE_STATUS
 char statusLine[22];
+#endif
+#ifdef ENABLE_OLED
 char infoLine[18];
+#endif
+
+#ifdef ENABLE_SERIAL
 char serialBuffer[64];
 int serialPtr = 0;
 
@@ -129,57 +177,68 @@ void cmd_ver(char* buf, int size) {
     strcat(buf, QMK_VERSION " " QMK_BUILDDATE);
 }
 
+#ifdef ENABLE_UPTIME
 void cmd_uptime(char* buf, int size) {
     utoa(timer_read32() / 1000, buf, 10);
     strcat(buf, "s");
 }
+#endif
 
+#ifdef ENABLE_INFO
 void append_attr_state(char* buf, const char* name, const bool value) {
     strcat(buf, name);
     strcat(buf, ": ");
     strcat(buf, value ? "YES" : "NO");
 }
 
+void append_attr_value(char* buf, const char* name, const uint8_t value) {
+    strcat(buf, name);
+    strcat(buf, ": ");
+    utoa(value, buf + strlen(buf), 10);
+}
+
 void cmd_info(char* buf, int size) {
-    strcat(buf, QMK_KEYBOARD "/" QMK_KEYMAP "\r\n");
-    strcat(buf, "> " STR(MANUFACTURER) " " STR(PRODUCT) "\r\n");
-    strcat(buf, "> ");
+    strcat(buf, QMK_KEYBOARD "/" QMK_KEYMAP "\r\n"
+           "> " STR(MANUFACTURER) " " STR(PRODUCT) "\r\n"
+           "> ");
     append_attr_state(buf, "nkro", keymap_config.nkro);
 }
+#endif
 
 void cmd_reset(char* buf, int size) {
     serial_send("Bye!\r\n");
     bootloader_jump();
 }
 
+#ifdef ENABLE_INFO
 void cmd_rgb(char* buf, int size) {
     if (!rgblight_is_enabled()) {
-        strcat(buf, "RGB is OFF");
+        strcat(buf, "OFF");
         return;
     }
-    strcat(buf, "mode: ");
-    utoa(rgblight_get_mode(), buf + strlen(buf), 10);
-    strcat(buf, " hue: ");
-    utoa(rgblight_get_hue(), buf + strlen(buf), 10);
-    strcat(buf, " sat: ");
-    utoa(rgblight_get_sat(), buf + strlen(buf), 10);
-    strcat(buf, " val: ");
-    utoa(rgblight_get_val(), buf + strlen(buf), 10);
-    strcat(buf, " speed: ");
-    utoa(rgblight_get_speed(), buf + strlen(buf), 10);
+    append_attr_value(buf, "mode", rgblight_get_mode());
+    append_attr_value(buf, " hue", rgblight_get_hue());
+    append_attr_value(buf, " sat", rgblight_get_sat());
+    append_attr_value(buf, " val", rgblight_get_val());
+    append_attr_value(buf, " spd", rgblight_get_speed());
 }
+#endif
 
+#ifdef ENABLE_TIMER
 void cmd_timer(char* buf, int size) {
-    setTimer(atol(serialBuffer + 6));
+    setTimer(atoi(serialBuffer + 6));
     strcat(buf, "Timer ARMED");
 }
+#endif
 
+#ifdef ENABLE_SPEED
 void cmd_speed(char* buf, int size) {
-    long arg = atol(serialBuffer + 6);
+    int arg = atoi(serialBuffer + 6);
     rgblight_set_speed(arg);
     strcat(buf, "Speed:");
     utoa(arg, buf + strlen(buf), 10);
 }
+#endif
 
 void cmd_unknown(char* buf, int size) {
     strcat(buf, "Unknown: '");
@@ -188,6 +247,7 @@ void cmd_unknown(char* buf, int size) {
     utoa(strlen(serialBuffer), buf + strlen(buf), 10);
 }
 
+#ifdef ENABLE_STATUS
 void cmd_status(char* buf, int size) {
     int i;
     for (i = 0; i < sizeof(statusLine) && serialBuffer[i + 7]!= 0; ++i) {
@@ -195,13 +255,16 @@ void cmd_status(char* buf, int size) {
     }
     for (; i < sizeof(statusLine); ++i) statusLine[i] = ' ';
 }
+#endif
 
-uint32_t time_base = 0;
-
+#ifdef ENABLE_CLOCK
 void cmd_time(char* buf, int size) {
-    uint32_t arg = atol(serialBuffer + 5);
-    time_base = arg - timer_read32() / 1000;
+    int hour = atoi(serialBuffer + 5);
+    int min = atoi(serialBuffer + 8);
+    int now = hour * 60 + min;
+    time_base = now * 60L - timer_read32() / 1000;
 }
+#endif
 
 void cmd_help(char* buf, int size);
 
@@ -214,21 +277,33 @@ typedef struct command {
 
 command_t commands[] = {
     DEFINE_COMMAND(ver),
+#ifdef ENABLE_UPTIME
     DEFINE_COMMAND(uptime),
+#endif
+#ifdef ENABLE_INFO
     DEFINE_COMMAND(info),
-    DEFINE_COMMAND(help),
     DEFINE_COMMAND(rgb),
+#endif
+    DEFINE_COMMAND(help),
+#ifdef ENABLE_TIMER
     DEFINE_COMMAND(timer),
+#endif
     DEFINE_COMMAND(reset),
+#ifdef ENABLE_SPEED
     DEFINE_COMMAND(speed),
+#endif
+#ifdef ENABLE_STATUS
     DEFINE_COMMAND(status),
+#endif
+#ifdef ENABLE_CLOCK
     DEFINE_COMMAND(time),
+#endif
 };
 
 const int numCommands = sizeof(commands) / sizeof(command_t);
 
 void cmd_help(char* buf, int size) {
-    strcat(buf, "commands: ");
+    strcat(buf, "cmds: ");
     for (int i = 0; i < numCommands; ++i) {
         strcat(buf, commands[i].cmd);
         strcat(buf, " ");
@@ -277,17 +352,24 @@ void virtser_recv(uint8_t in) {
             virtser_send(in);
     }
 }
+#endif
 
 void matrix_scan_user(void) {
+#ifdef ENABLE_ALTTAB
     if (is_alt_tab_active && timer_elapsed(alt_tab_timer) > 300) {
         is_alt_tab_active = false;
         unregister_code(KC_LALT);
     }
-    if (timerLimit != -1 && timer_elapsed32(timerStart) > timerLimit) {
+#endif
+#ifdef ENABLE_TIMER
+    if (timerArmed() && timer_elapsed32(timerStart) > timerLimit) {
+#ifdef ENABLE_SERIAL
         serial_send("> TIMER!\a\r\n");
+#endif
         last_alarm_time = timer_read32();
-        timerLimit = -1;
+        timerLimit = 0;
     }
+#endif
 }
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
@@ -331,6 +413,21 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     return true;
 }
 
+void render_logo(uint8_t col, uint8_t row) {
+	static const char PROGMEM qmk_logo[][5] = {
+		{ 0x80, 0x81, 0x82, 0x83, 0x00},
+		{ 0xA0, 0xA1, 0xA2, 0xA3, 0x00},
+		{ 0xC0, 0xC1, 0xC2, 0xC3, 0x00},
+	};
+	oled_set_cursor(col, row);
+    oled_write_P(qmk_logo[0], false);
+	oled_set_cursor(col, row + 1);
+    oled_write_P(qmk_logo[1], false);
+	oled_set_cursor(col, row + 2);
+    oled_write_P(qmk_logo[2], false);
+}
+
+#ifdef ENABLE_NEKO
 extern uint8_t* oled_cursor;
 extern uint8_t oled_buffer[];
 extern uint8_t oled_rotation_width;
@@ -361,20 +458,6 @@ void render_animation(uint8_t col, uint8_t row, int frame) {
             oled_write_char(start + x * lineLen + y + frame * 4, false);
         }
     }
-}
-
-void render_logo(uint8_t col, uint8_t row) {
-	static const char PROGMEM qmk_logo[][5] = {
-		{ 0x80, 0x81, 0x82, 0x83, 0x00},
-		{ 0xA0, 0xA1, 0xA2, 0xA3, 0x00},
-		{ 0xC0, 0xC1, 0xC2, 0xC3, 0x00},
-	};
-	oled_set_cursor(col, row);
-    oled_write_P(qmk_logo[0], false);
-	oled_set_cursor(col, row + 1);
-    oled_write_P(qmk_logo[1], false);
-	oled_set_cursor(col, row + 2);
-    oled_write_P(qmk_logo[2], false);
 }
 
 int frame = 0;
@@ -420,20 +503,19 @@ void neko_awake(void) {
 void pick_frame(uint32_t idle_time) {
     if (idle_time > 30000) {
         neko_sleep();
-        return;
     } else if (idle_time > 15000) {
         neko_scratch();
-        return;
     } else if (idle_time > 5000) {
         neko_flap();
-        return;
     } else if (idle_time > 100 && idle_time < 5000) {
         neko_idle();
-        return;
+    } else {
+        neko_awake();
     }
-    neko_awake();
 }
+#endif
 
+#ifdef ENABLE_CLOCK
 inline void get_time(char* buf) {
     const uint32_t now = (time_base + timer_read32() / 1000) % 86400;
     const uint32_t hour = now / 3600;
@@ -445,21 +527,26 @@ inline void get_time(char* buf) {
     if (min < 10) strcat(buf, "0");
     utoa(min, buf + strlen(buf), 10);
 }
+#endif
 
-void get_infoline(void) {
-    if (timerLimit != -1) {
+bool get_infoline(void) {
+#ifdef ENABLE_TIMER
+    if (timerArmed()) {
         strcpy(infoLine, "Timer: ");
-        itoa((timerLimit - timer_elapsed32(timerStart)) / 1000,
+        utoa((timerLimit - timer_elapsed32(timerStart)) / 1000,
                 infoLine + strlen(infoLine), 10);
         strcat(infoLine, "s");
+        return true;
     }
+#endif
+    return false;
 }
 
+#ifdef ENABLE_OLED
 void oled_task_user(void) {
     uint32_t idle_time = timer_elapsed32(last_key_down_time);
-    if (timer_elapsed32(last_alarm_time) < idle_time) {
-        idle_time = timer_elapsed32(last_alarm_time);
-    }
+    const uint32_t alarm_time = timer_elapsed32(last_alarm_time);
+    if (alarm_time < idle_time) idle_time = alarm_time;
     if (idle_time > 60000) {
         oled_off();
         return;
@@ -480,12 +567,15 @@ void oled_task_user(void) {
     oled_write_P(get_mods() & MOD_MASK_CTRL ? PSTR(" CTL") : PSTR("    "), false);
     oled_write_P(get_mods() & MOD_MASK_ALT ? PSTR(" ALT") : PSTR("    "), false);
 
+#ifdef ENABLE_CLOCK
     char buf[7];
     get_time(buf);
     oled_write(buf, false);
+#endif
     oled_write_P(PSTR("\n"), false);
 
-	bool anime_pause = get_mods() & MOD_MASK_CTRL;
+#ifdef ENABLE_NEKO
+	const bool anime_pause = get_mods() & MOD_MASK_CTRL;
 
     // render_logo(17, 0);	
 
@@ -497,16 +587,19 @@ void oled_task_user(void) {
         }
     }
     render_animation(17, 0, frame);
+#endif
 
     oled_set_cursor(0, 2);
-    memset(infoLine, ' ', sizeof(infoLine));
-    infoLine[sizeof(infoLine) - 1] = 0;
-    oled_write(infoLine, false);
+    oled_write("                 ", false);
     oled_set_cursor(0, 2);
-    get_infoline();
-    oled_write(infoLine, false);
+    if (get_infoline()) {
+        oled_write(infoLine, false);
+    }
 
+#ifdef ENABLE_STATUS
     oled_set_cursor(0, 3);
     statusLine[sizeof(statusLine) - 1] = 0;
     oled_write(statusLine, false);
+#endif
 }
+#endif
