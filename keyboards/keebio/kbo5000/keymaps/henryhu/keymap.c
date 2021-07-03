@@ -12,7 +12,7 @@
 #define ENABLE_OLED   // 3.5K
 #define ENABLE_SERIAL // 1.9K
 #define ENABLE_ALTTAB //  90B
-#define ENABLE_MACRO  // 380B
+#define ENABLE_MACRO  // 250B
 
 enum encoder_names {
   LEFT_HALF_ENC = 0,
@@ -516,7 +516,7 @@ void pick_frame(uint32_t idle_time) {
 #endif
 
 #ifdef ENABLE_CLOCK
-inline void get_time(char* buf) {
+void get_time(char* buf) {
     const uint32_t now = (time_base + timer_read32() / 1000) % 86400;
     const uint32_t hour = now / 3600;
     const uint32_t min = now % 3600 / 60;
