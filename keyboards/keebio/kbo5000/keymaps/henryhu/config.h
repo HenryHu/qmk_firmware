@@ -9,7 +9,7 @@
 #define RGBLIGHT_SLEEP
 #undef RGBLIGHT_ANIMATIONS
 
-#define RGBLIGHT_EFFECT_ALTERNATING // Enable alternating animation mode.
+// #define RGBLIGHT_EFFECT_ALTERNATING // Enable alternating animation mode.
 #define RGBLIGHT_EFFECT_BREATHING // Enable breathing animation mode.
 // #define RGBLIGHT_EFFECT_CHRISTMAS // Enable christmas animation mode.
 // #define RGBLIGHT_EFFECT_KNIGHT // Enable knight animation mode.
@@ -27,3 +27,5 @@
 #undef SOFT_SERIAL_PIN
 
 #define OLED_FONT_H "keymaps/henryhu/glcdfont.c"
+
+#define LAYER_STATE_8BIT
