@@ -414,16 +414,16 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 }
 
 void render_logo(uint8_t col, uint8_t row) {
-	static const char PROGMEM qmk_logo[][5] = {
-		{ 0x80, 0x81, 0x82, 0x83, 0x00},
-		{ 0xA0, 0xA1, 0xA2, 0xA3, 0x00},
-		{ 0xC0, 0xC1, 0xC2, 0xC3, 0x00},
-	};
-	oled_set_cursor(col, row);
+    static const char PROGMEM qmk_logo[][5] = {
+        { 0x80, 0x81, 0x82, 0x83, 0x00},
+        { 0xA0, 0xA1, 0xA2, 0xA3, 0x00},
+        { 0xC0, 0xC1, 0xC2, 0xC3, 0x00},
+    };
+    oled_set_cursor(col, row);
     oled_write_P(qmk_logo[0], false);
-	oled_set_cursor(col, row + 1);
+    oled_set_cursor(col, row + 1);
     oled_write_P(qmk_logo[1], false);
-	oled_set_cursor(col, row + 2);
+    oled_set_cursor(col, row + 2);
     oled_write_P(qmk_logo[2], false);
 }
 
@@ -432,7 +432,7 @@ extern uint8_t* oled_cursor;
 extern uint8_t oled_buffer[];
 extern uint8_t oled_rotation_width;
 void oled_set_cursor_raw(int x, int y) {
-	oled_cursor = &oled_buffer[y * oled_rotation_width / 8 + x];
+    oled_cursor = &oled_buffer[y * oled_rotation_width / 8 + x];
 }
 
 const int8_t frame_offset[] = {
@@ -466,7 +466,7 @@ int frame_time = 500;
 
 /*
 enum NekoState {
-	IDLE = 0,
+    IDLE = 0,
     FLAP = 1,
     SCRATCH = 2,
     SLEEP = 3,
@@ -520,7 +520,7 @@ inline void get_time(char* buf) {
     const uint32_t now = (time_base + timer_read32() / 1000) % 86400;
     const uint32_t hour = now / 3600;
     const uint32_t min = now % 3600 / 60;
-	buf[0] = 0;
+    buf[0] = 0;
     if (hour < 10) strcat(buf, " ");
     utoa(hour, buf + strlen(buf), 10);
     strcat(buf, ":");
@@ -575,9 +575,9 @@ void oled_task_user(void) {
     oled_write_P(PSTR("\n"), false);
 
 #ifdef ENABLE_NEKO
-	const bool anime_pause = get_mods() & MOD_MASK_CTRL;
+    const bool anime_pause = get_mods() & MOD_MASK_CTRL;
 
-    // render_logo(17, 0);	
+    // render_logo(17, 0);
 
     if (!anime_pause) {
         uint32_t now = timer_read32();
