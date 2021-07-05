@@ -450,6 +450,7 @@ void matrix_scan_user(void) {
 }
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
+    last_key_down_time = timer_read32();
     /*
      * if (index == LEFT_HALF_ENC) {
         if (clockwise) {
@@ -462,38 +463,52 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         if (IS_LAYER_ON(1)) {
             if (clockwise) {
                 rgblight_increase_hue();
+                setInfoLine("Hue UP");
             } else {
                 rgblight_decrease_hue();
+                setInfoLine("Hue DOWN");
             }
         } else if (IS_LAYER_ON(2)) {
             if (clockwise) {
                 tap_code(KC_WH_D);
+                setInfoLine("Wheel UP");
             } else {
                 tap_code(KC_WH_U);
+                setInfoLine("Wheel DOWN");
             }
         } else {
             if (clockwise) {
                 tap_code(KC_VOLU);
+                setInfoLine("Vol UP");
             } else {
                 tap_code(KC_VOLD);
+                setInfoLine("Vol DOWN");
             }
         }
     } else if (index == RIGHT_HALF_ENC2) {
         if (IS_LAYER_ON(1)) {
             if (clockwise) {
                 rgblight_step();
+                setInfoLine("RGB NEXT");
             } else {
                 rgblight_step_reverse();
+                setInfoLine("RGB PREV");
             }
         } else if (IS_LAYER_ON(2)) {
             if (clockwise) {
+                oled_set_brightness(oled_get_brightness() + 10);
+                setInfoLine("OLED UP");
             } else {
+                oled_set_brightness(oled_get_brightness() - 10);
+                setInfoLine("OLED DOWN");
             }
         } else {
             if (clockwise) {
                 tap_code16(C(KC_EQL));
+                setInfoLine("Scale UP");
             } else {
                 tap_code16(C(KC_MINUS));
+                setInfoLine("Scale DOWN");
             }
         }
     }
@@ -616,20 +631,18 @@ void get_time(char* buf) {
 }
 #endif
 
-bool get_infoline(void) {
+#ifdef ENABLE_OLED
+void get_infoline(void) {
 #ifdef ENABLE_TIMER
     if (timerArmed()) {
         strcpy(infoLine, "Timer: ");
         utoa((timerLimit - timer_elapsed32(timerStart)) / 1000,
-                infoLine + strlen(infoLine), 10);
+                infoLine + 7, 10);
         strcat(infoLine, "s");
-        return true;
     }
 #endif
-    return false;
 }
 
-#ifdef ENABLE_OLED
 void oled_task_user(void) {
     uint32_t idle_time = timer_elapsed32(last_key_down_time);
     const uint32_t alarm_time = timer_elapsed32(last_alarm_time);
@@ -638,17 +651,20 @@ void oled_task_user(void) {
         oled_off();
         return;
     }
-    if (IS_LAYER_ON(1)) {
-        oled_write_P(PSTR("HYPER "), false);
+    if (idle_time > 5000) infoLine[0] = 0;
+    if (IS_LAYER_ON(2)) {
+        oled_write_P(PSTR("SUP "), false);
+    } else if (IS_LAYER_ON(1)) {
+        oled_write_P(PSTR("HYP "), false);
     } else {
         oled_write_P(PSTR("      "), false);
     }
     led_t led_state = host_keyboard_led_state();
-    oled_write_P(led_state.caps_lock ? PSTR("CAP") : PSTR("   "),
+    oled_write_P(led_state.caps_lock ? PSTR(" CAP") : PSTR("    "),
             led_state.caps_lock);
-    oled_write_P(led_state.scroll_lock ? PSTR("SCR") : PSTR("   "),
+    oled_write_P(led_state.scroll_lock ? PSTR(" SCR") : PSTR("    "),
             led_state.scroll_lock);
-    oled_write_P(led_state.num_lock ? PSTR("NUM\n") : PSTR("   \n"),
+    oled_write_P(led_state.num_lock ? PSTR(" NUM\n") : PSTR("    \n"),
             led_state.num_lock);
     oled_write_P(get_mods() & MOD_MASK_SHIFT ? PSTR("SFT") : PSTR("   "), false);
     oled_write_P(get_mods() & MOD_MASK_CTRL ? PSTR(" CTL") : PSTR("    "), false);
