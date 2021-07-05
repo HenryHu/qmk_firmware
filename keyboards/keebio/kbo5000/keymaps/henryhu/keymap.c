@@ -284,6 +284,7 @@ int serialPtr = 0;
 void serial_send(const char* str) {
     int len = strlen(str);
     for (int i = 0; i < len; ++i) {
+        if (str[i] == '\n') virtser_send('\r');
         virtser_send(str[i]);
     }
 }
