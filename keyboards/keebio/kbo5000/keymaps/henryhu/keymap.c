@@ -9,7 +9,7 @@
 #define ENABLE_NEKO   // 480B + font
 #define ENABLE_UPTIME //  50B
 #define ENABLE_STATUS //  80B
-#define ENABLE_OLED   // 3.5K
+#define ENABLE_OLED   // 3.7K
 #define ENABLE_SERIAL // 1.9K
 #define ENABLE_ALTTAB //  90B
 #define ENABLE_MACRO  // 250B
@@ -27,6 +27,7 @@ enum custom_keycodes {
     MACRO4,
     SET_TIMER,
     ALT_TAB,
+    CMD_MODE,
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -36,15 +37,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     S(C(KC_T)), KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                      KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC, KC_BSLS, KC_HOME, KC_END,
     MACRO1,     MO(1),   KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                      KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, KC_NUHS, KC_ENT,  KC_DEL,  KC_PGDN,
     MACRO2,     KC_LSFT, KC_NUBS, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,             KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, RSFT_T(KC_ENTER),                 KC_UP,
-    ALT_TAB,    KC_LCTL, KC_CAPS, KC_LGUI, KC_LALT, KC_SPC,  KC_SPC,                    MO(1),   KC_SPC,  MO(2),   KC_RGUI,                   KC_RCTL, KC_LEFT, KC_DOWN, KC_RGHT
+    ALT_TAB,    KC_LCTL, MO(2),   KC_LGUI, KC_LALT, KC_SPC,  KC_SPC,                    MO(1),   KC_SPC,  MO(2),   KC_RGUI,                   KC_RCTL, KC_LEFT, KC_DOWN, KC_RGHT
   ),
 
   [1] = LAYOUT_all(
     RESET,               RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD, RGB_VAI, RGB_VAD,          _______, _______,          _______, NK_TOGG, KC_MSEL, KC_EJCT, KC_SLEP, KC_PWR,  KC_WAKE,
     RGB_TOG,    _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,            KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______, _______, KC_MPLY, KC_MPRV,
-    RGB_MOD,    _______, KC_BTN1, KC_MS_U, KC_BTN2, KC_BTN3, _______,                   _______, _______, _______, _______, KC_PSCR, KC_BRID, KC_BRIU, KC_NLCK, KC_MRWD, KC_MFFD,
+    RGB_MOD,    KC_CAPS, KC_BTN1, KC_MS_U, KC_BTN2, KC_BTN3, _______,                   _______, _______, _______, _______, KC_PSCR, KC_BRID, KC_BRIU, KC_NLCK, KC_MRWD, KC_MFFD,
     MACRO3,     _______, KC_MS_L, KC_MS_D, KC_MS_R, KC_BTN4, KC_BTN5,                   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_SLCK, KC_WSCH, _______, KC_PENT, KC_MSTP, KC_MNXT,
-    MACRO4,     _______, _______, KC_WH_U, KC_WH_D, KC_WH_L, KC_WH_R, _______,          KC_CALC, KC_MAIL, KC_WBAK, KC_WFWD, KC_WREF,          _______,          _______,
+    MACRO4,     CMD_MODE, _______, KC_WH_U, KC_WH_D, KC_WH_L, KC_WH_R, _______,          KC_CALC, KC_MAIL, KC_WBAK, KC_WFWD, KC_WREF,          _______,          _______,
     SET_TIMER,  _______, _______, KC_RWIN, KC_RALT, _______, _______,                   MO(1),   _______, KC_APP,  _______,                   _______, _______, _______, _______
   ),
 
@@ -84,6 +85,28 @@ bool timerArmed(void) {
 }
 #endif
 
+bool command_mode = false;
+char cmdBuf[64];
+int cmdPos = 0;
+
+char get_char_for_key(uint16_t keycode) {
+    keycode = keycode & 0xFF;
+    if (keycode >= KC_A && keycode <= KC_Z) {
+        return keycode - KC_A + 'a';
+    }
+    if (keycode >= KC_1 && keycode <= KC_9) {
+        return keycode - KC_1 + '1';
+    }
+    if (keycode == KC_0) return '0';
+    if (keycode == KC_SPACE) return ' ';
+    if (keycode == KC_BSPACE) return '\b';
+    if (keycode == KC_ENTER) return '\n';
+    return 0;
+}
+
+void command_mode_key(uint16_t keycode, keyrecord_t *record);
+void handle_command(char* cmd, char* buf, int size);
+
 bool process_key_down(uint16_t keycode, keyrecord_t *record) {
     last_key_down_time = timer_read32();
     switch (keycode) {
@@ -97,6 +120,10 @@ bool process_key_down(uint16_t keycode, keyrecord_t *record) {
             register_code(KC_TAB);
             break;
 #endif
+        default:
+            if (command_mode) {
+                return false;
+            }
     }
     return true;
 }
@@ -143,6 +170,14 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
             unregister_code(KC_TAB);
             break;
 #endif
+        case CMD_MODE:
+            command_mode = !command_mode;
+            break;
+        default:
+            if (command_mode) {
+                command_mode_key(keycode, record);
+                return false;
+            }
     }
     return true;
 }
@@ -160,7 +195,38 @@ char statusLine[22];
 #endif
 #ifdef ENABLE_OLED
 char infoLine[18];
+
+void setInfoLine(const char* buf) {
+    strcpy(infoLine, buf);
+}
+#else
+void setInfoLine(const char* buf) {
+}
 #endif
+
+void command_process(void) {
+    infoLine[0] = 0;
+    handle_command(cmdBuf, infoLine, sizeof(infoLine));
+}
+
+void command_mode_key(uint16_t keycode, keyrecord_t *record) {
+    char ch = get_char_for_key(keycode);
+    if (ch == '\n') {
+        if (cmdPos > 0) command_process();
+        cmdPos = 0;
+        memset(cmdBuf, 0, sizeof(cmdBuf));
+        return;
+    }
+    if (ch == '\b') {
+        cmdBuf[cmdPos] = 0;
+        if (cmdPos > 0) --cmdPos;
+    }
+    if (ch != 0) {
+        cmdBuf[cmdPos++] = ch;
+    }
+    infoLine[0] = '?';
+    strncpy(infoLine + 1, cmdBuf, sizeof(infoLine) - 1);
+}
 
 #ifdef ENABLE_SERIAL
 char serialBuffer[64];
@@ -173,12 +239,12 @@ void serial_send(const char* str) {
     }
 }
 
-void cmd_ver(char* buf, int size) {
+void cmd_ver(char* cmd, char* buf, int size) {
     strcat(buf, QMK_VERSION " " QMK_BUILDDATE);
 }
 
 #ifdef ENABLE_UPTIME
-void cmd_uptime(char* buf, int size) {
+void cmd_uptime(char* cmd, char* buf, int size) {
     utoa(timer_read32() / 1000, buf, 10);
     strcat(buf, "s");
 }
@@ -197,7 +263,7 @@ void append_attr_value(char* buf, const char* name, const uint8_t value) {
     utoa(value, buf + strlen(buf), 10);
 }
 
-void cmd_info(char* buf, int size) {
+void cmd_info(char* cmd, char* buf, int size) {
     strcat(buf, QMK_KEYBOARD "/" QMK_KEYMAP "\r\n"
            "> " STR(MANUFACTURER) " " STR(PRODUCT) "\r\n"
            "> ");
@@ -205,13 +271,13 @@ void cmd_info(char* buf, int size) {
 }
 #endif
 
-void cmd_reset(char* buf, int size) {
+void cmd_reset(char* cmd, char* buf, int size) {
     serial_send("Bye!\r\n");
     bootloader_jump();
 }
 
 #ifdef ENABLE_INFO
-void cmd_rgb(char* buf, int size) {
+void cmd_rgb(char* cmd, char* buf, int size) {
     if (!rgblight_is_enabled()) {
         strcat(buf, "OFF");
         return;
@@ -225,52 +291,55 @@ void cmd_rgb(char* buf, int size) {
 #endif
 
 #ifdef ENABLE_TIMER
-void cmd_timer(char* buf, int size) {
-    setTimer(atoi(serialBuffer + 6));
+void cmd_timer(char* cmd, char* buf, int size) {
+    setTimer(atoi(cmd + 6));
     strcat(buf, "Timer ARMED");
 }
 #endif
 
 #ifdef ENABLE_SPEED
-void cmd_speed(char* buf, int size) {
-    int arg = atoi(serialBuffer + 6);
+void cmd_speed(char* cmd, char* buf, int size) {
+    int arg = atoi(cmd + 6);
     rgblight_set_speed(arg);
     strcat(buf, "Speed:");
     utoa(arg, buf + strlen(buf), 10);
 }
 #endif
 
-void cmd_unknown(char* buf, int size) {
-    strcat(buf, "Unknown: '");
-    strcat(buf, serialBuffer);
-    strcat(buf, "', len: ");
-    utoa(strlen(serialBuffer), buf + strlen(buf), 10);
+void cmd_unknown(char* cmd, char* buf, int size) {
+    strcat(buf, "?: '");
+    strcat(buf, cmd);
+    strcat(buf, "'");
 }
 
 #ifdef ENABLE_STATUS
-void cmd_status(char* buf, int size) {
+void cmd_status(char* cmd, char* buf, int size) {
     int i;
-    for (i = 0; i < sizeof(statusLine) && serialBuffer[i + 7]!= 0; ++i) {
-        statusLine[i] = serialBuffer[i + 7];
+    for (i = 0; i < sizeof(statusLine) && cmd[i + 7]!= 0; ++i) {
+        statusLine[i] = cmd[i + 7];
     }
     for (; i < sizeof(statusLine); ++i) statusLine[i] = ' ';
 }
 #endif
 
 #ifdef ENABLE_CLOCK
-void cmd_time(char* buf, int size) {
-    int hour = atoi(serialBuffer + 5);
-    int min = atoi(serialBuffer + 8);
+void cmd_time(char* cmd, char* buf, int size) {
+    int hour = atoi(cmd + 5);
+    int min = atoi(cmd + 8);
     int now = hour * 60 + min;
     time_base = now * 60L - timer_read32() / 1000;
 }
 #endif
 
-void cmd_help(char* buf, int size);
+void cmd_exit(char* cmd, char* buf, int size) {
+    command_mode = false;
+}
+
+void cmd_help(char* cmd, char* buf, int size);
 
 typedef struct command {
     const char* cmd;
-    void (*handler) (char* buf, int size);
+    void (*handler) (char* cmd, char* buf, int size);
 } command_t;
 
 #define DEFINE_COMMAND(name) {#name, cmd_##name}
@@ -298,11 +367,12 @@ command_t commands[] = {
 #ifdef ENABLE_CLOCK
     DEFINE_COMMAND(time),
 #endif
+    DEFINE_COMMAND(exit),
 };
 
 const int numCommands = sizeof(commands) / sizeof(command_t);
 
-void cmd_help(char* buf, int size) {
+void cmd_help(char* cmd, char* buf, int size) {
     strcat(buf, "cmds: ");
     for (int i = 0; i < numCommands; ++i) {
         strcat(buf, commands[i].cmd);
@@ -310,13 +380,17 @@ void cmd_help(char* buf, int size) {
     }
 }
 
-void handle_serial_command(char* buf, int size) {
+void handle_command(char* cmd, char* buf, int size) {
     for (int i = 0; i < numCommands; ++i) {
-        if (strncmp(serialBuffer, commands[i].cmd, strlen(commands[i].cmd)) == 0) {
-            return (*commands[i].handler)(buf, size);
+        if (strncmp(cmd, commands[i].cmd, strlen(commands[i].cmd)) == 0) {
+#ifdef ENABLE_OLED
+            infoLine[0] = '!';
+            strcpy(infoLine + 1, commands[i].cmd);
+#endif
+            return (*commands[i].handler)(cmd, buf, size);
         }
     }
-    cmd_unknown(buf, size);
+    cmd_unknown(cmd, buf, size);
 }
 
 void process_serial_command(void) {
@@ -325,7 +399,7 @@ void process_serial_command(void) {
     buf[1] = ' ';
     buf[2] = 0;
     buf[sizeof(buf) - 1] = 0;
-    handle_serial_command(buf + 2, sizeof(buf) - 2);
+    handle_command(serialBuffer, buf + 2, sizeof(buf) - 2);
     strcat(buf, "\r\n");
     serial_send(buf);
 }
@@ -368,6 +442,9 @@ void matrix_scan_user(void) {
 #endif
         last_alarm_time = timer_read32();
         timerLimit = 0;
+#ifdef ENABLE_OLED
+        infoLine[0] = 0;
+#endif
     }
 #endif
 }
@@ -388,6 +465,12 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
             } else {
                 rgblight_decrease_hue();
             }
+        } else if (IS_LAYER_ON(2)) {
+            if (clockwise) {
+                tap_code(KC_WH_D);
+            } else {
+                tap_code(KC_WH_U);
+            }
         } else {
             if (clockwise) {
                 tap_code(KC_VOLU);
@@ -401,6 +484,10 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                 rgblight_step();
             } else {
                 rgblight_step_reverse();
+            }
+        } else if (IS_LAYER_ON(2)) {
+            if (clockwise) {
+            } else {
             }
         } else {
             if (clockwise) {
@@ -589,12 +676,11 @@ void oled_task_user(void) {
     render_animation(17, 0, frame);
 #endif
 
+    get_infoline();
     oled_set_cursor(0, 2);
     oled_write("                 ", false);
     oled_set_cursor(0, 2);
-    if (get_infoline()) {
-        oled_write(infoLine, false);
-    }
+    oled_write(infoLine, false);
 
 #ifdef ENABLE_STATUS
     oled_set_cursor(0, 3);
