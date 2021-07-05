@@ -13,6 +13,7 @@
 #define ENABLE_SERIAL // 1.9K
 #define ENABLE_ALTTAB //  90B
 #define ENABLE_MACRO  // 250B
+#define ENABLE_CMDMODE// 200B
 
 enum encoder_names {
   LEFT_HALF_ENC = 0,
@@ -85,6 +86,7 @@ bool timerArmed(void) {
 }
 #endif
 
+#ifdef ENABLE_CMDMODE
 bool command_mode = false;
 char cmdBuf[64];
 int cmdPos = 0;
@@ -103,8 +105,9 @@ char get_char_for_key(uint16_t keycode) {
     if (keycode == KC_ENTER) return '\n';
     return 0;
 }
+#endif
 
-void command_mode_key(uint16_t keycode, keyrecord_t *record);
+bool command_mode_key(uint16_t keycode, keyrecord_t *record);
 void handle_command(char* cmd, char* buf, int size);
 
 bool process_key_down(uint16_t keycode, keyrecord_t *record) {
@@ -120,10 +123,12 @@ bool process_key_down(uint16_t keycode, keyrecord_t *record) {
             register_code(KC_TAB);
             break;
 #endif
+#ifdef ENABLE_CMDMODE
         default:
             if (command_mode) {
                 return false;
             }
+#endif
     }
     return true;
 }
@@ -170,14 +175,15 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
             unregister_code(KC_TAB);
             break;
 #endif
+#ifdef ENABLE_CMDMODE
         case CMD_MODE:
             command_mode = !command_mode;
             break;
         default:
             if (command_mode) {
-                command_mode_key(keycode, record);
-                return false;
+                return command_mode_key(keycode, record);
             }
+#endif
     }
     return true;
 }
@@ -194,39 +200,44 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 char statusLine[22];
 #endif
 #ifdef ENABLE_OLED
-char infoLine[18];
+char infoLine[22];
 
 void setInfoLine(const char* buf) {
-    strcpy(infoLine, buf);
+    strlcpy(infoLine, buf, sizeof(infoLine));
 }
 #else
 void setInfoLine(const char* buf) {
 }
 #endif
 
+#ifdef ENABLE_CMDMODE
 void command_process(void) {
-    infoLine[0] = 0;
-    handle_command(cmdBuf, infoLine, sizeof(infoLine));
+    char result[64];
+    result[0] = 0;
+    handle_command(cmdBuf, result, 64);
+    strlcpy(infoLine, result, sizeof(infoLine));
 }
 
-void command_mode_key(uint16_t keycode, keyrecord_t *record) {
+bool command_mode_key(uint16_t keycode, keyrecord_t *record) {
     char ch = get_char_for_key(keycode);
     if (ch == '\n') {
         if (cmdPos > 0) command_process();
         cmdPos = 0;
         memset(cmdBuf, 0, sizeof(cmdBuf));
-        return;
+        return false;
     }
     if (ch == '\b') {
-        cmdBuf[cmdPos] = 0;
         if (cmdPos > 0) --cmdPos;
-    }
-    if (ch != 0) {
-        cmdBuf[cmdPos++] = ch;
+        cmdBuf[cmdPos] = 0;
+    } else if (ch != 0) {
+        if (cmdPos < sizeof(cmdBuf)) cmdBuf[cmdPos++] = ch;
     }
     infoLine[0] = '?';
-    strncpy(infoLine + 1, cmdBuf, sizeof(infoLine) - 1);
+    strlcpy(infoLine + 1, cmdBuf, sizeof(infoLine) - 1);
+    strlcat(infoLine, "_", sizeof(infoLine));
+    return ch == 0;
 }
+#endif
 
 #ifdef ENABLE_SERIAL
 char serialBuffer[64];
@@ -331,9 +342,11 @@ void cmd_time(char* cmd, char* buf, int size) {
 }
 #endif
 
+#ifdef ENABLE_CMDMODE
 void cmd_exit(char* cmd, char* buf, int size) {
     command_mode = false;
 }
+#endif
 
 void cmd_help(char* cmd, char* buf, int size);
 
@@ -367,7 +380,9 @@ command_t commands[] = {
 #ifdef ENABLE_CLOCK
     DEFINE_COMMAND(time),
 #endif
+#ifdef ENABLE_CMDMODE
     DEFINE_COMMAND(exit),
+#endif
 };
 
 const int numCommands = sizeof(commands) / sizeof(command_t);
@@ -385,7 +400,7 @@ void handle_command(char* cmd, char* buf, int size) {
         if (strncmp(cmd, commands[i].cmd, strlen(commands[i].cmd)) == 0) {
 #ifdef ENABLE_OLED
             infoLine[0] = '!';
-            strcpy(infoLine + 1, commands[i].cmd);
+            strlcpy(infoLine + 1, commands[i].cmd, sizeof(infoLine) - 1);
 #endif
             return (*commands[i].handler)(cmd, buf, size);
         }
@@ -657,15 +672,16 @@ void oled_task_user(void) {
     } else if (IS_LAYER_ON(1)) {
         oled_write_P(PSTR("HYP "), false);
     } else {
-        oled_write_P(PSTR("      "), false);
+        oled_write_P(PSTR("    "), false);
     }
-    led_t led_state = host_keyboard_led_state();
-    oled_write_P(led_state.caps_lock ? PSTR(" CAP") : PSTR("    "),
+    const led_t led_state = host_keyboard_led_state();
+    oled_write_P(led_state.caps_lock ? PSTR("CAP") : PSTR("   "),
             led_state.caps_lock);
-    oled_write_P(led_state.scroll_lock ? PSTR(" SCR") : PSTR("    "),
+    oled_write_P(led_state.scroll_lock ? PSTR("SCR") : PSTR("   "),
             led_state.scroll_lock);
-    oled_write_P(led_state.num_lock ? PSTR(" NUM\n") : PSTR("    \n"),
+    oled_write_P(led_state.num_lock ? PSTR("NUM") : PSTR("   "),
             led_state.num_lock);
+    oled_write_P(command_mode ? PSTR("CMD\n") : PSTR("   \n"), command_mode);
     oled_write_P(get_mods() & MOD_MASK_SHIFT ? PSTR("SFT") : PSTR("   "), false);
     oled_write_P(get_mods() & MOD_MASK_CTRL ? PSTR(" CTL") : PSTR("    "), false);
     oled_write_P(get_mods() & MOD_MASK_ALT ? PSTR(" ALT") : PSTR("    "), false);
