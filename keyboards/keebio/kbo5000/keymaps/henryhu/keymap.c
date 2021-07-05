@@ -90,6 +90,8 @@ bool timerArmed(void) {
 bool command_mode = false;
 char cmdBuf[64];
 int cmdPos = 0;
+char cmdRet[256];
+uint8_t cmdRetPtr = 0;
 
 char get_char_for_key(uint16_t keycode) {
     keycode = keycode & 0xFF;
@@ -200,7 +202,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 char statusLine[22];
 #endif
 #ifdef ENABLE_OLED
-char infoLine[22];
+char infoLine[18];
 
 void setInfoLine(const char* buf) {
     strlcpy(infoLine, buf, sizeof(infoLine));
@@ -212,18 +214,41 @@ void setInfoLine(const char* buf) {
 
 #ifdef ENABLE_CMDMODE
 void command_process(void) {
-    char result[64];
-    result[0] = 0;
-    handle_command(cmdBuf, result, 64);
-    strlcpy(infoLine, result, sizeof(infoLine));
+    cmdRet[0] = 0;
+    handle_command(cmdBuf, cmdRet, sizeof(cmdRet));
+    uint8_t end = 0;
+    while (cmdRet[end] != 0 && cmdRet[end] != '\n' && end < sizeof(infoLine) - 1) ++end;
+    char ch = cmdRet[end];
+    cmdRet[end] = 0;
+    setInfoLine(cmdRet);
+    cmdRet[end] = ch;
+    cmdRetPtr = 0;
 }
 
 bool command_mode_key(uint16_t keycode, keyrecord_t *record) {
     char ch = get_char_for_key(keycode);
     if (ch == '\n') {
-        if (cmdPos > 0) command_process();
-        cmdPos = 0;
-        memset(cmdBuf, 0, sizeof(cmdBuf));
+        if (cmdPos > 0) {
+            command_process();
+            cmdPos = 0;
+            memset(cmdBuf, 0, sizeof(cmdBuf));
+        } else {
+            uint8_t end = cmdRetPtr;
+            while (cmdRet[end] != 0 && cmdRet[end] != '\n' && end < cmdRetPtr + sizeof(infoLine) - 1) ++end;
+            if (cmdRet[end] == 0) {
+                cmdRetPtr = 0;
+            } else if (cmdRet[end] == '\n') {
+                cmdRetPtr = end + 1;
+            } else {
+                cmdRetPtr = end;
+            }
+            end = cmdRetPtr;
+            while (cmdRet[end] != 0 && cmdRet[end] != '\n' && end < cmdRetPtr + sizeof(infoLine) - 1) ++end;
+            char ch = cmdRet[end];
+            cmdRet[end] = 0;
+            setInfoLine(&cmdRet[cmdRetPtr]);
+            cmdRet[end] = ch;
+        }
         return false;
     }
     if (ch == '\b') {
@@ -251,7 +276,7 @@ void serial_send(const char* str) {
 }
 
 void cmd_ver(char* cmd, char* buf, int size) {
-    strcat(buf, QMK_VERSION " " QMK_BUILDDATE);
+    strcat(buf, QMK_VERSION "\n" QMK_BUILDDATE);
 }
 
 #ifdef ENABLE_UPTIME
@@ -275,9 +300,8 @@ void append_attr_value(char* buf, const char* name, const uint8_t value) {
 }
 
 void cmd_info(char* cmd, char* buf, int size) {
-    strcat(buf, QMK_KEYBOARD "/" QMK_KEYMAP "\r\n"
-           "> " STR(MANUFACTURER) " " STR(PRODUCT) "\r\n"
-           "> ");
+    strcat(buf, QMK_KEYBOARD "\n"
+           STR(MANUFACTURER) " " STR(PRODUCT) " @ " QMK_KEYMAP"\n");
     append_attr_state(buf, "nkro", keymap_config.nkro);
 }
 #endif
@@ -295,9 +319,9 @@ void cmd_rgb(char* cmd, char* buf, int size) {
     }
     append_attr_value(buf, "mode", rgblight_get_mode());
     append_attr_value(buf, " hue", rgblight_get_hue());
-    append_attr_value(buf, " sat", rgblight_get_sat());
+    append_attr_value(buf, "\nsat", rgblight_get_sat());
     append_attr_value(buf, " val", rgblight_get_val());
-    append_attr_value(buf, " spd", rgblight_get_speed());
+    append_attr_value(buf, "\nspd", rgblight_get_speed());
 }
 #endif
 
