@@ -6,14 +6,23 @@
 #define ENABLE_CLOCK  // 320B
 #define ENABLE_INFO   // 360B
 #define ENABLE_TIMER  // 500B
+// #define ENABLE_SPEED
 #define ENABLE_NEKO   // 480B + font
 #define ENABLE_UPTIME //  50B
 #define ENABLE_STATUS //  80B
 #define ENABLE_OLED   // 3.7K
-#define ENABLE_SERIAL // 1.9K
 #define ENABLE_ALTTAB //  90B
 #define ENABLE_MACRO  // 250B
-#define ENABLE_CMDMODE// 200B
+#define ENABLE_SERIAL // 700B + cmds
+#define ENABLE_CMDMODE// 550B + cmds
+
+#if defined(ENABLE_SERIAL) || defined(ENABLE_CMDMODE)
+#define ENABLE_CMDS
+#endif
+
+#if defined(ENABLE_CMDMODE)
+#define ENABLE_OLED
+#endif
 
 enum encoder_names {
   LEFT_HALF_ENC = 0,
@@ -89,7 +98,7 @@ bool timerArmed(void) {
 #ifdef ENABLE_CMDMODE
 bool command_mode = false;
 char cmdBuf[64];
-int cmdPos = 0;
+int cmdPtr = 0;
 char cmdRet[256];
 uint8_t cmdRetPtr = 0;
 
@@ -137,7 +146,7 @@ bool process_key_down(uint16_t keycode, keyrecord_t *record) {
 
 void send_string_lite(const char* buf, const int len) {
     bool shift = false;
-    for (uint8_t i = 0; i < len; ++i) {
+    for (int i = 0; i < len; ++i) {
         if (buf[i] == KC_LSFT) {
             if (shift) unregister_code(buf[i]); else register_code(buf[i]);
             shift = !shift;
@@ -199,10 +208,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 #ifdef ENABLE_STATUS
-char statusLine[22];
+char statusLine[18];
 #endif
 #ifdef ENABLE_OLED
-char infoLine[18];
+char infoLine[22];
 
 void setInfoLine(const char* buf) {
     strlcpy(infoLine, buf, sizeof(infoLine));
@@ -213,28 +222,37 @@ void setInfoLine(const char* buf) {
 #endif
 
 #ifdef ENABLE_CMDMODE
+
+int find_next_end(void) {
+    int end = cmdRetPtr;
+    while (cmdRet[end] != 0 && cmdRet[end] != '\n' && end < cmdRetPtr + sizeof(infoLine) - 1) ++end;
+    return end;
+}
+
+void print_until_newline(void) {
+    int end = find_next_end();
+    char ch = cmdRet[end];
+    cmdRet[end] = 0;
+    setInfoLine(&cmdRet[cmdRetPtr]);
+    cmdRet[end] = ch;
+}
+
 void command_process(void) {
     cmdRet[0] = 0;
     handle_command(cmdBuf, cmdRet, sizeof(cmdRet));
-    uint8_t end = 0;
-    while (cmdRet[end] != 0 && cmdRet[end] != '\n' && end < sizeof(infoLine) - 1) ++end;
-    char ch = cmdRet[end];
-    cmdRet[end] = 0;
-    setInfoLine(cmdRet);
-    cmdRet[end] = ch;
     cmdRetPtr = 0;
+    print_until_newline();
 }
 
 bool command_mode_key(uint16_t keycode, keyrecord_t *record) {
     char ch = get_char_for_key(keycode);
     if (ch == '\n') {
-        if (cmdPos > 0) {
+        if (cmdPtr > 0) {
             command_process();
-            cmdPos = 0;
+            cmdPtr = 0;
             memset(cmdBuf, 0, sizeof(cmdBuf));
         } else {
-            uint8_t end = cmdRetPtr;
-            while (cmdRet[end] != 0 && cmdRet[end] != '\n' && end < cmdRetPtr + sizeof(infoLine) - 1) ++end;
+            int end = find_next_end();
             if (cmdRet[end] == 0) {
                 cmdRetPtr = 0;
             } else if (cmdRet[end] == '\n') {
@@ -242,24 +260,19 @@ bool command_mode_key(uint16_t keycode, keyrecord_t *record) {
             } else {
                 cmdRetPtr = end;
             }
-            end = cmdRetPtr;
-            while (cmdRet[end] != 0 && cmdRet[end] != '\n' && end < cmdRetPtr + sizeof(infoLine) - 1) ++end;
-            char ch = cmdRet[end];
-            cmdRet[end] = 0;
-            setInfoLine(&cmdRet[cmdRetPtr]);
-            cmdRet[end] = ch;
+            print_until_newline();
         }
         return false;
     }
     if (ch == '\b') {
-        if (cmdPos > 0) --cmdPos;
-        cmdBuf[cmdPos] = 0;
+        if (cmdPtr > 0) --cmdPtr;
+        cmdBuf[cmdPtr] = 0;
     } else if (ch != 0) {
-        if (cmdPos < sizeof(cmdBuf)) cmdBuf[cmdPos++] = ch;
+        if (cmdPtr < sizeof(cmdBuf)) cmdBuf[cmdPtr++] = ch;
     }
     infoLine[0] = '?';
-    strlcpy(infoLine + 1, cmdBuf, sizeof(infoLine) - 1);
-    strlcat(infoLine, "_", sizeof(infoLine));
+    strlcpy(infoLine + 1, cmdBuf, sizeof(infoLine) - 2);
+    strcat(infoLine, "_");
     return ch == 0;
 }
 #endif
@@ -274,7 +287,9 @@ void serial_send(const char* str) {
         virtser_send(str[i]);
     }
 }
+#endif // ENABLE_SERIAL
 
+#ifdef ENABLE_CMDS
 void cmd_ver(char* cmd, char* buf, int size) {
     strcat(buf, QMK_VERSION "\n" QMK_BUILDDATE);
 }
@@ -307,7 +322,9 @@ void cmd_info(char* cmd, char* buf, int size) {
 #endif
 
 void cmd_reset(char* cmd, char* buf, int size) {
+#ifdef ENABLE_SERIAL
     serial_send("Bye!\r\n");
+#endif
     bootloader_jump();
 }
 
@@ -342,9 +359,8 @@ void cmd_speed(char* cmd, char* buf, int size) {
 #endif
 
 void cmd_unknown(char* cmd, char* buf, int size) {
-    strcat(buf, "?: '");
+    strcat(buf, "?: ");
     strcat(buf, cmd);
-    strcat(buf, "'");
 }
 
 #ifdef ENABLE_STATUS
@@ -407,6 +423,7 @@ command_t commands[] = {
 #ifdef ENABLE_CMDMODE
     DEFINE_COMMAND(exit),
 #endif
+    {"", NULL},
 };
 
 const int numCommands = sizeof(commands) / sizeof(command_t);
@@ -420,18 +437,20 @@ void cmd_help(char* cmd, char* buf, int size) {
 }
 
 void handle_command(char* cmd, char* buf, int size) {
-    for (int i = 0; i < numCommands; ++i) {
-        if (strncmp(cmd, commands[i].cmd, strlen(commands[i].cmd)) == 0) {
+    for (command_t* command = &commands[0]; command->handler != NULL; ++command) {
+        if (memcmp(cmd, command->cmd, strlen(command->cmd)) == 0) {
 #ifdef ENABLE_OLED
             infoLine[0] = '!';
-            strlcpy(infoLine + 1, commands[i].cmd, sizeof(infoLine) - 1);
+            strlcpy(infoLine + 1, command->cmd, sizeof(infoLine) - 1);
 #endif
-            return (*commands[i].handler)(cmd, buf, size);
+            return (*command->handler)(cmd, buf, size);
         }
     }
     cmd_unknown(cmd, buf, size);
 }
+#endif // ENABLE_CMDS
 
+#ifdef ENABLE_SERIAL
 void process_serial_command(void) {
     char buf[256];
     buf[0] = '>';
@@ -705,7 +724,11 @@ void oled_task_user(void) {
             led_state.scroll_lock);
     oled_write_P(led_state.num_lock ? PSTR("NUM") : PSTR("   "),
             led_state.num_lock);
+#ifdef ENABLE_CMDMODE
     oled_write_P(command_mode ? PSTR("CMD\n") : PSTR("   \n"), command_mode);
+#else
+    oled_write_P(PSTR("\n"), false);
+#endif
     oled_write_P(get_mods() & MOD_MASK_SHIFT ? PSTR("SFT") : PSTR("   "), false);
     oled_write_P(get_mods() & MOD_MASK_CTRL ? PSTR(" CTL") : PSTR("    "), false);
     oled_write_P(get_mods() & MOD_MASK_ALT ? PSTR(" ALT") : PSTR("    "), false);
@@ -732,16 +755,16 @@ void oled_task_user(void) {
     render_animation(17, 0, frame);
 #endif
 
-    get_infoline();
-    oled_set_cursor(0, 2);
-    oled_write("                 ", false);
-    oled_set_cursor(0, 2);
-    oled_write(infoLine, false);
-
 #ifdef ENABLE_STATUS
-    oled_set_cursor(0, 3);
+    oled_set_cursor(0, 2);
     statusLine[sizeof(statusLine) - 1] = 0;
     oled_write(statusLine, false);
 #endif
+
+    get_infoline();
+    oled_set_cursor(0, 3);
+    oled_write_P(PSTR("                     "), false);
+    oled_set_cursor(0, 3);
+    oled_write(infoLine, false);
 }
 #endif
