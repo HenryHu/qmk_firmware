@@ -554,7 +554,7 @@ endif
 
 # Generate the version.h file
 ifndef SKIP_GIT
-    GIT_VERSION := $(shell git describe --abbrev=6 --dirty --always --tags 2>/dev/null || date +"%Y-%m-%d-%H:%M:%S")
+    GIT_VERSION := $(shell git describe --abbrev=6 --always --tags 2>/dev/null || date +"%Y-%m-%d-%H:%M:%S")
     CHIBIOS_VERSION := $(shell cd lib/chibios && git describe --abbrev=6 --dirty --always --tags 2>/dev/null || date +"%Y-%m-%d-%H:%M:%S")
     CHIBIOS_CONTRIB_VERSION := $(shell cd lib/chibios-contrib && git describe --abbrev=6 --dirty --always --tags 2>/dev/null || date +"%Y-%m-%d-%H:%M:%S")
 else
