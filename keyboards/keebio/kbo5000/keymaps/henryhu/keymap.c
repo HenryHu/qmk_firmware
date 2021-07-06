@@ -303,15 +303,18 @@ void cmd_uptime(char* cmd, char* buf, int size) {
 #endif
 
 #ifdef ENABLE_INFO
-void append_attr_state(char* buf, const char* name, const bool value) {
+void append_attr_name(char* buf, const char* name) {
     strcat(buf, name);
     strcat(buf, ": ");
+}
+
+void append_attr_state(char* buf, const char* name, const bool value) {
+    append_attr_name(buf, name);
     strcat(buf, value ? "YES" : "NO");
 }
 
 void append_attr_value(char* buf, const char* name, const uint8_t value) {
-    strcat(buf, name);
-    strcat(buf, ": ");
+    append_attr_name(buf, name);
     utoa(value, buf + strlen(buf), 10);
 }
 
@@ -323,9 +326,6 @@ void cmd_info(char* cmd, char* buf, int size) {
 #endif
 
 void cmd_reset(char* cmd, char* buf, int size) {
-#ifdef ENABLE_SERIAL
-    serial_send("Bye!\r\n");
-#endif
     bootloader_jump();
 }
 
@@ -346,7 +346,7 @@ void cmd_rgb(char* cmd, char* buf, int size) {
 #ifdef ENABLE_TIMER
 void cmd_timer(char* cmd, char* buf, int size) {
     setTimer(atoi(cmd + 6));
-    strcat(buf, "Timer ARMED");
+    strcat(buf, "ARMED");
 }
 #endif
 
