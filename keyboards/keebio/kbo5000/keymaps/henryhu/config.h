@@ -29,3 +29,8 @@
 #define OLED_FONT_H "keymaps/henryhu/glcdfont.c"
 
 #define LAYER_STATE_8BIT
+
+#undef ENCODERS_PAD_A
+#undef ENCODERS_PAD_B
+#define ENCODERS_PAD_A { NO_PIN, NO_PIN }
+#define ENCODERS_PAD_B { NO_PIN, NO_PIN }
