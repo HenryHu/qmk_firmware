@@ -306,7 +306,7 @@ void cmd_ver(char* cmd, char* buf, int size) {
 
 #ifdef ENABLE_UPTIME
 void cmd_uptime(char* cmd, char* buf, int size) {
-    utoa(timer_read32() / 1000, buf, 10);
+    ultoa(timer_read32() / 1000, buf, 10);
     strcat(buf, "s");
 }
 #endif
