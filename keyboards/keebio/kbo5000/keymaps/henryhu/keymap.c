@@ -724,6 +724,9 @@ void get_infoline(void) {
         strcat(infoLine, "s");
     }
 #endif
+    int len = strlen(infoLine);
+    for (int j = len; j < sizeof(infoLine); ++j) infoLine[j] = ' ';
+    infoLine[sizeof(infoLine) - 1] = 0;
 }
 
 void oled_task_user(void) {
@@ -787,8 +790,6 @@ void oled_task_user(void) {
 #endif
 
     get_infoline();
-    oled_set_cursor(0, 3);
-    oled_write_P(PSTR("                     "), false);
     oled_set_cursor(0, 3);
     oled_write(infoLine, false);
 }
