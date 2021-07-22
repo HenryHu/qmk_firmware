@@ -719,8 +719,7 @@ void get_infoline(void) {
 #ifdef ENABLE_TIMER
     if (timerArmed()) {
         strcpy(infoLine, "Timer: ");
-        utoa((timerLimit - timer_elapsed32(timerStart)) / 1000,
-                infoLine + 7, 10);
+        ultoa((timerLimit - timer_elapsed32(timerStart)) / 1000, infoLine + 7, 10);
         strcat(infoLine, "s");
     }
 #endif
