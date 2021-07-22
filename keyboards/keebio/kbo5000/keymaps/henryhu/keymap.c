@@ -1,7 +1,8 @@
 #include QMK_KEYBOARD_H
-#include "virtser.h"
 #include "version.h"
 #include "macro_strings.h"
+
+#include <string.h>
 
 #define ENABLE_CLOCK  // 320B
 #define ENABLE_INFO   // 360B
@@ -13,7 +14,7 @@
 #define ENABLE_OLED   // 3.7K
 #define ENABLE_ALTTAB //  90B
 #define ENABLE_MACRO  // 250B
-#define ENABLE_SERIAL // 700B + cmds
+#define ENABLE_SERIAL // 1.6K + cmds
 #define ENABLE_CMDMODE// 550B + cmds
 
 #if defined(ENABLE_SERIAL) || defined(ENABLE_CMDMODE)
@@ -22,6 +23,10 @@
 
 #if defined(ENABLE_CMDMODE)
 #define ENABLE_OLED
+#endif
+
+#ifdef ENABLE_SERIAL
+#include "virtser.h"
 #endif
 
 enum encoder_names {
@@ -92,6 +97,20 @@ void setTimer(int timeout) {
 
 bool timerArmed(void) {
     return timerLimit != 0;
+}
+#endif
+
+#ifdef ENABLE_STATUS
+char statusLine[18];
+#endif
+#ifdef ENABLE_OLED
+char infoLine[22];
+
+void setInfoLine(const char* buf) {
+    strlcpy(infoLine, buf, sizeof(infoLine));
+}
+#else
+void setInfoLine(const char* buf) {
 }
 #endif
 
@@ -192,6 +211,7 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
 #ifdef ENABLE_CMDMODE
         case CMD_MODE:
             command_mode = !command_mode;
+            setInfoLine("?_");
             break;
         default:
             if (command_mode) {
@@ -209,20 +229,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         return process_key_up(keycode, record);
     }
 }
-
-#ifdef ENABLE_STATUS
-char statusLine[18];
-#endif
-#ifdef ENABLE_OLED
-char infoLine[22];
-
-void setInfoLine(const char* buf) {
-    strlcpy(infoLine, buf, sizeof(infoLine));
-}
-#else
-void setInfoLine(const char* buf) {
-}
-#endif
 
 #ifdef ENABLE_CMDMODE
 
