@@ -1,5 +1,8 @@
 #include QMK_KEYBOARD_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #include "anim.h"
 
 #ifdef ENABLE_NEKO

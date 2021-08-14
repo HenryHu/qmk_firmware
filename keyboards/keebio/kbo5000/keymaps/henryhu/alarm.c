@@ -1,5 +1,9 @@
 #include QMK_KEYBOARD_H
 
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
 #include "alarm.h"
 
 #ifdef ENABLE_ALARM

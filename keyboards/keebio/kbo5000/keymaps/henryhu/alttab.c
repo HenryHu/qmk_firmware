@@ -1,5 +1,8 @@
 #include QMK_KEYBOARD_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "alttab.h"
 
 #ifdef ENABLE_ALTTAB

@@ -1,5 +1,7 @@
 #include QMK_KEYBOARD_H
 
+#include <stdbool.h>
+
 #include "options.h"
 #include "common.h"
 #include "key.h"

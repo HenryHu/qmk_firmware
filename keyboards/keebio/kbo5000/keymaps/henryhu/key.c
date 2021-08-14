@@ -1,5 +1,7 @@
 #include QMK_KEYBOARD_H
 
+#include <stdbool.h>
+
 #include "common.h"
 #include "macro_strings.h"
 #include "cmdmode.h"

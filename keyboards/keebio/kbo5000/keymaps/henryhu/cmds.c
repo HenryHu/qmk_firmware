@@ -148,5 +148,3 @@ void handle_command(char* cmd, char* buf, int size) {
     cmd_unknown(cmd, buf, size);
 }
 #endif // ENABLE_CMDS
-
-

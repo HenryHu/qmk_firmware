@@ -1,5 +1,9 @@
 #include QMK_KEYBOARD_H
 
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include "clock.h"
 
 #ifdef ENABLE_CLOCK
