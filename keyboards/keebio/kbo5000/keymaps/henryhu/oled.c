@@ -19,10 +19,10 @@ void setInfoLine(const char* buf) {
 }
 
 void get_infoline(void) {
-#ifdef ENABLE_TIMER
-    if (timerArmed()) {
-        strcpy(infoLine, "Timer: ");
-        ultoa(timerRemaining(), infoLine + 7, 10);
+#ifdef ENABLE_ALARM
+    if (alarmArmed()) {
+        strcpy(infoLine, "Alarm: ");
+        ultoa(alarmRemaining(), infoLine + 7, 10);
         strcat(infoLine, "s");
     }
 #endif
@@ -47,7 +47,7 @@ void render_logo(uint8_t col, uint8_t row) {
 
 void oled_task_user(void) {
     uint32_t idle_time = idleTime();
-#ifdef ENABLE_TIMER
+#ifdef ENABLE_ALARM
     const uint32_t alarm_time = alarmTime();
     if (alarm_time < idle_time) idle_time = alarm_time;
 #endif

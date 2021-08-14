@@ -2,43 +2,47 @@
 
 #include "alarm.h"
 
-#ifdef ENABLE_TIMER
+#ifdef ENABLE_ALARM
 uint32_t last_alarm_time = 0;
-uint32_t timerStart = 0;
-uint32_t timerLimit = 0;
+uint32_t alarmStart = 0;
+uint32_t alarmLimit = 0;
 
-void setTimer(int timeout) {
-    timerStart = timer_read32();
-    timerLimit = timeout * 1000L;
+void setAlarm(int timeout) {
+    alarmStart = timer_read32();
+    alarmLimit = timeout * 1000L;
 }
 
-bool timerArmed(void) {
-    return timerLimit != 0;
+bool alarmArmed(void) {
+    return alarmLimit != 0;
 }
 
-uint32_t timerRemaining(void) {
-    return (timerLimit - timer_elapsed32(timerStart)) / 1000;
+uint32_t alarmRemaining(void) {
+    return (alarmLimit - timer_elapsed32(alarmStart)) / 1000;
 }
 
 uint32_t alarmTime(void) {
     return timer_elapsed32(last_alarm_time);
 }
 
-bool timerTriggered(void) {
-    if (timerArmed() && timer_elapsed32(timerStart) > timerLimit) {
+bool alarmTriggered(void) {
+    if (alarmArmed() && timer_elapsed32(alarmStart) > alarmLimit) {
         last_alarm_time = timer_read32();
-        timerLimit = 0;
+        alarmLimit = 0;
         return true;
     }
     return false;
 }
 
-void timerKey(void) {
-    if (!timerArmed()) {
-        setTimer(10);
-    } else if (timerLimit == 10000) {
-        setTimer(60);
+void alarmKey(void) {
+    if (!alarmArmed()) {
+        setAlarm(10);
+    } else if (alarmLimit == 10000) {
+        setAlarm(60);
     }
 }
 
+void cmd_alarm(char* cmd, char* buf, int size) {
+    setAlarm(atoi(cmd + 6));
+    strcat(buf, "ARMED");
+}
 #endif

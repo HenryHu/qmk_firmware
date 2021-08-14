@@ -66,9 +66,9 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
             send_string_lite(MACRO4_STRING, sizeof(MACRO4_STRING));
             break;
 #endif
-#ifdef ENABLE_TIMER
-        case SET_TIMER:
-            timerKey();
+#ifdef ENABLE_ALARM
+        case SET_ALARM:
+            alarmKey();
             break;
 #endif
 #ifdef ENABLE_ALTTAB

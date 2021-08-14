@@ -5,7 +5,7 @@ enum custom_keycodes {
     MACRO2,
     MACRO3,
     MACRO4,
-    SET_TIMER,
+    SET_ALARM,
     ALT_TAB,
     CMD_MODE,
 };

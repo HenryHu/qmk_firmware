@@ -4,13 +4,14 @@
 
 #include <stdint.h>
 
-#ifdef ENABLE_TIMER
+#ifdef ENABLE_ALARM
 
-void setTimer(int timeout);
-bool timerArmed(void);
-uint32_t timerRemaining(void);
+void setAlarm(int timeout);
+bool alarmArmed(void);
+uint32_t alarmRemaining(void);
 uint32_t alarmTime(void);
-bool timerTriggered(void);
-void timerKey(void);
+bool alarmTriggered(void);
+void alarmKey(void);
+void cmd_alarm(char* cmd, char* buf, int size);
 
 #endif

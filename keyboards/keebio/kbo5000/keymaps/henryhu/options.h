@@ -1,6 +1,6 @@
 #define ENABLE_CLOCK  // 320B
 #define ENABLE_INFO   // 360B
-#define ENABLE_TIMER  // 500B
+#define ENABLE_ALARM  // 500B
 // #define ENABLE_SPEED
 #define ENABLE_NEKO   // 480B + font
 #define ENABLE_UPTIME //  50B

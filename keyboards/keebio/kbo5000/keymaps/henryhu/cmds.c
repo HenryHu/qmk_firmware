@@ -63,13 +63,6 @@ void cmd_rgb(char* cmd, char* buf, int size) {
 }
 #endif
 
-#ifdef ENABLE_TIMER
-void cmd_timer(char* cmd, char* buf, int size) {
-    setTimer(atoi(cmd + 6));
-    strcat(buf, "ARMED");
-}
-#endif
-
 #ifdef ENABLE_SPEED
 void cmd_speed(char* cmd, char* buf, int size) {
     int arg = atoi(cmd + 6);
@@ -113,8 +106,8 @@ command_t commands[] = {
     DEFINE_COMMAND(rgb),
 #endif
     DEFINE_COMMAND(help),
-#ifdef ENABLE_TIMER
-    DEFINE_COMMAND(timer),
+#ifdef ENABLE_ALARM
+    DEFINE_COMMAND(alarm),
 #endif
     DEFINE_COMMAND(reset),
 #ifdef ENABLE_SPEED
