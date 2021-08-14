@@ -14,3 +14,5 @@ GRAVE_ESC_ENABLE = no
 BOOTMAGIC_ENABLE = no
 OLED_DRIVER_ENABLE = yes
 WPM_ENABLE = no
+
+SRC += oled.c timer.c status.c cmdmode.c clock.c anim.c cmds.c serial.c encoder.c key.c alttab.c
