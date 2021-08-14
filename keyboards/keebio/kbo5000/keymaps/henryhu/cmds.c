@@ -16,7 +16,7 @@ void cmd_ver(char* cmd, char* buf, int size) {
 
 #ifdef ENABLE_UPTIME
 void cmd_uptime(char* cmd, char* buf, int size) {
-    utoa(timer_read32() / 1000, buf, 10);
+    ultoa(timer_read32() / 1000, buf, 10);
     strcat(buf, "s");
 }
 #endif
@@ -39,7 +39,9 @@ void append_attr_value(char* buf, const char* name, const uint8_t value) {
 
 void cmd_info(char* cmd, char* buf, int size) {
     strcat(buf, QMK_KEYBOARD "\n" STR(MANUFACTURER) " " STR(PRODUCT) "\n");
+#ifdef NKRO_ENABLE
     append_attr_state(buf, "nkro", keymap_config.nkro);
+#endif
 }
 #endif
 

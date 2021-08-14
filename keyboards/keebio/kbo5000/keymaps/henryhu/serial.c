@@ -1,30 +1,30 @@
 #include QMK_KEYBOARD_H
-#include "virtser.h"
-
 #include "serial.h"
-#include "cmds.h"
 
 #ifdef ENABLE_SERIAL
-char serialBuffer[64];
+#include "virtser.h"
+
+#include "cmds.h"
+#include "cmdmode.h"
+
+char serialBuffer[32];
 int serialPtr = 0;
 
 void serial_send(const char* str) {
-    int len = strlen(str);
-    for (int i = 0; i < len; ++i) {
-        if (str[i] == '\n') virtser_send('\r');
-        virtser_send(str[i]);
+    while (*str != 0) {
+        if (*str == '\n') virtser_send('\r');
+        virtser_send(*str);
+        ++str;
     }
 }
 
 void process_serial_command(void) {
-    char buf[256];
-    buf[0] = '>';
-    buf[1] = ' ';
-    buf[2] = 0;
-    buf[sizeof(buf) - 1] = 0;
-    handle_command(serialBuffer, buf + 2, sizeof(buf) - 2);
-    strcat(buf, "\r\n");
-    serial_send(buf);
+    cmdRet[0] = '>';
+    cmdRet[1] = ' ';
+    cmdRet[2] = 0;
+    handle_command(serialBuffer, cmdRet + 2, sizeof(cmdRet) - 2);
+    strcat(cmdRet, "\r\n");
+    serial_send(cmdRet);
 }
 
 void virtser_recv(uint8_t in) {

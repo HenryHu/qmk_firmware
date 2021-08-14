@@ -22,10 +22,13 @@ void get_infoline(void) {
 #ifdef ENABLE_TIMER
     if (timerArmed()) {
         strcpy(infoLine, "Timer: ");
-        utoa(timerRemaining(), infoLine + 7, 10);
+        ultoa(timerRemaining(), infoLine + 7, 10);
         strcat(infoLine, "s");
     }
 #endif
+    int len = strlen(infoLine);
+    for (int j = len; j < sizeof(infoLine); ++j) infoLine[j] = ' ';
+    infoLine[sizeof(infoLine) - 1] = 0;
 }
 
 void render_logo(uint8_t col, uint8_t row) {
@@ -101,8 +104,6 @@ void oled_task_user(void) {
 #endif
 
     get_infoline();
-    oled_set_cursor(0, 3);
-    oled_write_P(PSTR("                     "), false);
     oled_set_cursor(0, 3);
     oled_write(infoLine, false);
 }

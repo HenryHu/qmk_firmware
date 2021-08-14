@@ -4,6 +4,7 @@
 #include "macro_strings.h"
 #include "cmdmode.h"
 #include "alttab.h"
+#include "oled.h"
 
 uint32_t last_key_down_time = 0;
 
@@ -23,6 +24,9 @@ bool process_key_down(uint16_t keycode, keyrecord_t *record) {
             alttab_down();
             break;
 #endif
+        case RGB_TOG:
+            rgblight_toggle_noeeprom();
+            break;
 #ifdef ENABLE_CMDMODE
         default:
             if (command_mode) {
@@ -74,6 +78,7 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
 #ifdef ENABLE_CMDMODE
         case CMD_MODE:
             command_mode = !command_mode;
+            setInfoLine("?_");
             break;
         default:
             if (command_mode) {
