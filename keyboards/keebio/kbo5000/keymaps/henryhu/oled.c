@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "options.h"
-#include "timer.h"
+#include "alarm.h"
 #include "key.h"
 #include "status.h"
 #include "cmdmode.h"

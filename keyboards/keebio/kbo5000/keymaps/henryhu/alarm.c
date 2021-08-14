@@ -1,6 +1,6 @@
 #include QMK_KEYBOARD_H
 
-#include "timer.h"
+#include "alarm.h"
 
 #ifdef ENABLE_TIMER
 uint32_t last_alarm_time = 0;

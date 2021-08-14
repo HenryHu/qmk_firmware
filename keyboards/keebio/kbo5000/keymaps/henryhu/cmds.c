@@ -4,7 +4,7 @@
 #include "cmds.h"
 
 #include "oled.h"
-#include "timer.h"
+#include "alarm.h"
 #include "status.h"
 #include "cmdmode.h"
 #include "clock.h"

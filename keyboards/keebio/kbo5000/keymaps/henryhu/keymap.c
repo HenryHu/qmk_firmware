@@ -6,6 +6,7 @@
 #include "serial.h"
 #include "oled.h"
 #include "alttab.h"
+#include "alarm.h"
 
 #define F11 KC_F11
 

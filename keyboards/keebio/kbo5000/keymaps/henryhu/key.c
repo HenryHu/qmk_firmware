@@ -5,6 +5,7 @@
 #include "cmdmode.h"
 #include "alttab.h"
 #include "oled.h"
+#include "alarm.h"
 
 uint32_t last_key_down_time = 0;
 
