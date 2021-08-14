@@ -44,11 +44,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (record->event.pressed) {
-        return process_key_down(keycode, record);
-    } else {
-        return process_key_up(keycode, record);
-    }
+    return record->event.pressed ?
+        process_key_down(keycode, record) :
+        process_key_up(keycode, record);
 }
 
 void matrix_scan_user(void) {
