@@ -56,7 +56,9 @@ void oled_task_user(void) {
         return;
     }
     if (idle_time > 5000) infoLine[0] = 0;
-    if (IS_LAYER_ON(2)) {
+    if (IS_LAYER_ON(3)) {
+        oled_write_P(PSTR("XOP "), false);
+    } else if (IS_LAYER_ON(2)) {
         oled_write_P(PSTR("SUP "), false);
     } else if (IS_LAYER_ON(1)) {
         oled_write_P(PSTR("HYP "), false);

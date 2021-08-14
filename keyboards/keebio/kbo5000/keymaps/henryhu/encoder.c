@@ -40,11 +40,11 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
             }
         } else if (IS_LAYER_ON(2)) {
             if (clockwise) {
-                tap_code(KC_WH_D);
-                setInfoLine("Wheel UP");
+                rgblight_increase_val_noeeprom();
+                setInfoLine("Val UP");
             } else {
-                tap_code(KC_WH_U);
-                setInfoLine("Wheel DOWN");
+                rgblight_decrease_val_noeeprom();
+                setInfoLine("Val DOWN");
             }
         } else {
             if (clockwise) {
@@ -58,11 +58,11 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     } else if (index == RIGHT_HALF_ENC2) {
         if (IS_LAYER_ON(3)) {
             if (clockwise) {
-                rgblight_increase_val_noeeprom();
-                setInfoLine("Val UP");
+                tap_code16(C(KC_EQL));
+                setInfoLine("Scale UP");
             } else {
-                rgblight_decrease_val_noeeprom();
-                setInfoLine("Val DOWN");
+                tap_code16(C(KC_MINUS));
+                setInfoLine("Scale DOWN");
             }
         } else if (IS_LAYER_ON(1)) {
             if (clockwise) {
@@ -82,11 +82,11 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
             }
         } else {
             if (clockwise) {
-                tap_code16(C(KC_EQL));
-                setInfoLine("Scale UP");
+                tap_code(KC_WH_D);
+                setInfoLine("Wheel UP");
             } else {
-                tap_code16(C(KC_MINUS));
-                setInfoLine("Scale DOWN");
+                tap_code(KC_WH_U);
+                setInfoLine("Wheel DOWN");
             }
         }
     }
