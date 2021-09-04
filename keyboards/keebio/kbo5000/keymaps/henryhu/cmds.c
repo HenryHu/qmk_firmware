@@ -3,6 +3,7 @@
 #include "version.h"
 #include "cmds.h"
 
+#include "common.h"
 #include "oled.h"
 #include "alarm.h"
 #include "status.h"
@@ -16,8 +17,8 @@ void cmd_ver(char* cmd, char* buf, int size) {
 
 #ifdef ENABLE_UPTIME
 void cmd_uptime(char* cmd, char* buf, int size) {
-    ultoa(timer_read32() / 1000, buf, 10);
-    strcat(buf, "s");
+    utoa(timer_read32() / ms_per_min, buf, 10);
+    strcat(buf, "m");
 }
 #endif
 

@@ -22,7 +22,7 @@ void get_infoline(void) {
 #ifdef ENABLE_ALARM
     if (alarmArmed()) {
         strcpy(infoLine, "Alarm: ");
-        ultoa(alarmRemaining(), infoLine + 7, 10);
+        utoa(alarmRemaining(), infoLine + 7, 10);
         strcat(infoLine, "s");
     }
 #endif
