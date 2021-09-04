@@ -5,14 +5,15 @@
 #include <stdlib.h>
 
 #include "clock.h"
+#include "common.h"
 
 #ifdef ENABLE_CLOCK
-uint32_t time_base = 0;
+uint16_t time_base_min = 0;
 
 void get_time(char* buf) {
-    const uint32_t now = (time_base + timer_read32() / 1000) % 86400;
-    const uint32_t hour = now / 3600;
-    const uint32_t min = now % 3600 / 60;
+    const uint16_t now_min = (time_base_min + timer_read32() / ms_per_min) % min_per_day;
+    const uint8_t hour = now_min / min_per_hour;
+    const uint8_t min = now_min - hour * min_per_hour;
     buf[0] = 0;
     if (hour < 10) strcat(buf, " ");
     utoa(hour, buf + strlen(buf), 10);
@@ -22,9 +23,9 @@ void get_time(char* buf) {
 }
 
 void cmd_time(char* cmd, char* buf, int size) {
-    int hour = atoi(cmd + 5);
-    int min = atoi(cmd + 8);
-    int now = hour * 60 + min;
-    time_base = now * 60L - timer_read32() / 1000;
+    const uint16_t hour = atoi(cmd + 5);
+    const uint16_t min = atoi(cmd + 8);
+    const uint16_t now_min = hour * min_per_hour + min;
+    time_base_min = now_min - timer_read32() / ms_per_min;
 }
 #endif

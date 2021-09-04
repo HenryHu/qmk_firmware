@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "alarm.h"
+#include "common.h"
 
 #ifdef ENABLE_ALARM
 uint32_t last_alarm_time = 0;
@@ -13,7 +14,7 @@ uint32_t alarmLimit = 0;
 
 void setAlarm(int timeout) {
     alarmStart = timer_read32();
-    alarmLimit = timeout * 1000L;
+    alarmLimit = timeout * ms_per_sec;
 }
 
 bool alarmArmed(void) {
@@ -21,7 +22,7 @@ bool alarmArmed(void) {
 }
 
 uint32_t alarmRemaining(void) {
-    return (alarmLimit - timer_elapsed32(alarmStart)) / 1000;
+    return (alarmLimit - timer_elapsed32(alarmStart)) / ms_per_sec;
 }
 
 uint32_t alarmTime(void) {
