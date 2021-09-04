@@ -109,6 +109,12 @@ void oled_task_user(void) {
     oled_set_cursor(0, 3);
     oled_write(infoLine, false);
 }
+
+void shutdown_oled(void) {
+    oled_clear();
+    oled_write_P(PSTR("RESET"), false);
+    oled_render();
+}
 #else
 void setInfoLine(const char* buf) {
 }
