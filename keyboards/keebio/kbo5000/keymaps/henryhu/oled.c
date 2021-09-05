@@ -12,6 +12,7 @@
 #include "clock.h"
 #include "anim.h"
 #include "oled.h"
+#include "common.h"
 
 #ifdef ENABLE_OLED
 char infoLine[22];
@@ -20,11 +21,15 @@ void setInfoLine(const char* buf) {
     strlcpy(infoLine, buf, sizeof(infoLine));
 }
 
+void appendInfoLine(const uint16_t value) {
+    appendValue(infoLine, value);
+}
+
 void get_infoline(void) {
 #ifdef ENABLE_ALARM
     if (alarmArmed()) {
-        strcpy(infoLine, "Alarm: ");
-        utoa(alarmRemaining(), infoLine + 7, 10);
+        setInfoLine("Alarm: ");
+        appendInfoLine(alarmRemaining());
         strcat(infoLine, "s");
     }
 #endif
@@ -48,7 +53,7 @@ void render_logo(uint8_t col, uint8_t row) {
 }
 
 void oled_write_led_state(bool led_state, const char* name) {
-    oled_write_P(led_state ? name : PSTR("   "), led_state);
+    oled_write(led_state ? name : "   ", led_state);
 }
 
 void oled_task_user(void) {
@@ -65,29 +70,29 @@ void oled_task_user(void) {
 
     // 4 chars
     if (IS_LAYER_ON(3)) {
-        oled_write_P(PSTR("XOP "), false);
+        oled_write("XOP ", false);
     } else if (IS_LAYER_ON(2)) {
-        oled_write_P(PSTR("SUP "), false);
+        oled_write("SUP ", false);
     } else if (IS_LAYER_ON(1)) {
-        oled_write_P(PSTR("HYP "), false);
+        oled_write("HYP ", false);
     } else {
-        oled_write_P(PSTR("    "), false);
+        oled_write("    ", false);
     }
 
     // 9/12 chars
     const led_t led_state = host_keyboard_led_state();
-    oled_write_led_state(led_state.caps_lock, PSTR("CAP"));
-    oled_write_led_state(led_state.scroll_lock, PSTR("SCR"));
-    oled_write_led_state(led_state.num_lock, PSTR("NUM"));
+    oled_write_led_state(led_state.caps_lock, "CAP");
+    oled_write_led_state(led_state.scroll_lock, "SCR");
+    oled_write_led_state(led_state.num_lock, "NUM");
 #ifdef ENABLE_CMDMODE
-    oled_write_led_state(command_mode, PSTR("CMD"));
+    oled_write_led_state(command_mode, "CMD");
 #endif
 
     // 11 chars
     oled_set_cursor(0, 1);
-    oled_write_P(get_mods() & MOD_MASK_SHIFT ? PSTR("SFT") : PSTR("   "), false);
-    oled_write_P(get_mods() & MOD_MASK_CTRL ? PSTR(" CTL") : PSTR("    "), false);
-    oled_write_P(get_mods() & MOD_MASK_ALT ? PSTR(" ALT") : PSTR("    "), false);
+    oled_write(get_mods() & MOD_MASK_SHIFT ? "SFT" : "   ", false);
+    oled_write(get_mods() & MOD_MASK_CTRL ? " CTL" : "    ", false);
+    oled_write(get_mods() & MOD_MASK_ALT ? " ALT" : "    ", false);
 
 #ifdef ENABLE_CLOCK
     // 5 chars
@@ -119,10 +124,10 @@ void oled_task_user(void) {
 }
 
 void shutdown_oled(void) {
-    oled_write_P(PSTR("RESET"), false);
+    oled_write("RESET", false);
     oled_render();
 }
 #else
-void setInfoLine(const char* buf) {
-}
+void setInfoLine(const char* buf) {}
+void appendInfoLine(const uint16_t value) {}
 #endif

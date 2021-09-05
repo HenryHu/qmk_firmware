@@ -8,3 +8,4 @@ void shutdown_oled(void);
 #endif
 
 void setInfoLine(const char* buf);
+void appendInfoLine(uint16_t value);

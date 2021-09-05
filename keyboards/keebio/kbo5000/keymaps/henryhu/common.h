@@ -21,3 +21,5 @@ extern const uint8_t hour_per_day;
 extern const uint16_t sec_per_hour;
 extern const uint16_t min_per_day;
 extern const uint16_t ms_per_min;
+
+void appendValue(char* buf, const uint16_t value);
