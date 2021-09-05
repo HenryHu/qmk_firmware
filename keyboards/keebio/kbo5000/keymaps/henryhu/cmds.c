@@ -48,10 +48,6 @@ void cmd_info(char* cmd, char* buf, int size) {
 }
 #endif
 
-void cmd_reset(char* cmd, char* buf, int size) {
-    bootloader_jump();
-}
-
 #ifdef ENABLE_INFO
 void cmd_rgb(char* cmd, char* buf, int size) {
     if (!rgblight_is_enabled()) {
@@ -112,7 +108,6 @@ command_t commands[] = {
 #ifdef ENABLE_ALARM
     DEFINE_COMMAND(alarm),
 #endif
-    DEFINE_COMMAND(reset),
 #ifdef ENABLE_SPEED
     DEFINE_COMMAND(speed),
 #endif
