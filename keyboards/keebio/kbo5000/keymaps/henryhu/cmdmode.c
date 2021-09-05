@@ -24,13 +24,11 @@ char get_char_for_key(uint16_t keycode) {
     }
     if (keycode == KC_0) return '0';
     if (keycode == KC_SPACE) return ' ';
-    if (keycode == KC_BSPACE) return '\b';
-    if (keycode == KC_ENTER) return '\n';
     return 0;
 }
 
 int find_next_end(void) {
-    int end = cmdRetPtr;
+    size_t end = cmdRetPtr;
     while (cmdRet[end] != 0 && cmdRet[end] != '\n' && end < cmdRetPtr + sizeof(infoLine) - 1) ++end;
     return end;
 }
@@ -51,12 +49,11 @@ void command_process(void) {
 }
 
 bool command_mode_key(uint16_t keycode, keyrecord_t *record) {
-    char ch = get_char_for_key(keycode);
-    if (ch == '\n') {
+    if (keycode == KC_ENTER) {
         if (cmdPtr > 0) {
             command_process();
             cmdPtr = 0;
-            memset(cmdBuf, 0, sizeof(cmdBuf));
+            cmdBuf[0] = 0;
         } else {
             int end = find_next_end();
             if (cmdRet[end] == 0) {
@@ -70,16 +67,26 @@ bool command_mode_key(uint16_t keycode, keyrecord_t *record) {
         }
         return false;
     }
-    if (ch == '\b') {
+
+    bool unknown_char = false;
+    if (keycode == KC_BSPACE) {
         if (cmdPtr > 0) --cmdPtr;
         cmdBuf[cmdPtr] = 0;
-    } else if (ch != 0) {
-        if (cmdPtr < sizeof(cmdBuf)) cmdBuf[cmdPtr++] = ch;
+    } else {
+        char ch = get_char_for_key(keycode);
+        if (ch != 0) {
+            if (cmdPtr < sizeof(cmdBuf) - 1) {
+                cmdBuf[cmdPtr++] = ch;
+                cmdBuf[cmdPtr] = 0;
+            }
+        } else {
+            unknown_char = true;
+        }
     }
     infoLine[0] = '?';
     strlcpy(infoLine + 1, cmdBuf, sizeof(infoLine) - 2);
     strcat(infoLine, "_");
-    return ch == 0;
+    return unknown_char;
 }
 
 void cmd_exit(char* cmd, char* buf, int size) {
