@@ -11,7 +11,7 @@
 bool command_mode = false;
 char cmdBuf[64];
 int cmdPtr = 0;
-char cmdRet[256];
+char cmdRet[64];
 uint8_t cmdRetPtr = 0;
 
 char get_char_for_key(uint16_t keycode) {
