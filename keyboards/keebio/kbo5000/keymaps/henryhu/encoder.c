@@ -11,7 +11,10 @@ enum encoder_names {
   RIGHT_HALF_ENC2,
 };
 
+const uint16_t init_time = 500;
+
 bool encoder_update_user(uint8_t index, bool clockwise) {
+    if (timer_read() < init_time) return true;
     updateKeyDownTime();
     /*
      * if (index == LEFT_HALF_ENC) {
