@@ -55,8 +55,8 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
             }
         }
     } else if (index == RIGHT_HALF_ENC2) {
-        setInfoLine("Scale");
         if (IS_LAYER_ON(3)) {
+            setInfoLine("Scale");
             if (clockwise) {
                 tap_code16(C(KC_EQL));
             } else {
