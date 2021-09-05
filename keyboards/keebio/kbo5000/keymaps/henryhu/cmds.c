@@ -78,9 +78,9 @@ void cmd_unknown(char* cmd, char* buf, int size) {
 
 #ifdef ENABLE_STATUS
 void cmd_status(char* cmd, char* buf, int size) {
-    int i;
-    for (i = 0; i < sizeof(statusLine) && cmd[i + 7]!= 0; ++i) {
-        statusLine[i] = cmd[i + 7];
+    int i = 0, ptr = 7;
+    for (i = 0; i < sizeof(statusLine) && cmd[ptr] != 0; ++i, ++ptr) {
+        statusLine[i] = cmd[ptr];
     }
     for (; i < sizeof(statusLine); ++i) statusLine[i] = ' ';
 }
@@ -120,14 +120,14 @@ command_t commands[] = {
 #ifdef ENABLE_CMDMODE
     DEFINE_COMMAND(exit),
 #endif
-    {"", NULL},
+    {NULL, NULL},
 };
 
-const int numCommands = sizeof(commands) / sizeof(command_t);
+const uint8_t numCommands = sizeof(commands) / sizeof(command_t);
 
 void cmd_help(char* cmd, char* buf, int size) {
     strcat(buf, "cmds: ");
-    for (int i = 0; i < numCommands; ++i) {
+    for (uint8_t i = 0; i < numCommands; ++i) {
         strcat(buf, commands[i].cmd);
         strcat(buf, " ");
     }
