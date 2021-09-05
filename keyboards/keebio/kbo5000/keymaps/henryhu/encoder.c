@@ -26,72 +26,73 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     } else */
     if (index == RIGHT_HALF_ENC1) {
         if (IS_LAYER_ON(3)) {
+            setInfoLine("Hue");
             if (clockwise) {
                 rgblight_increase_hue();
-                setInfoLine("Hue UP");
             } else {
                 rgblight_decrease_hue();
-                setInfoLine("Hue DOWN");
             }
         } else if (IS_LAYER_ON(1)) {
+            setInfoLine("Sat");
             if (clockwise) {
                 rgblight_increase_sat_noeeprom();
-                setInfoLine("Sat UP");
             } else {
                 rgblight_decrease_sat_noeeprom();
-                setInfoLine("Sat DOWN");
             }
         } else if (IS_LAYER_ON(2)) {
+            setInfoLine("Val");
             if (clockwise) {
                 rgblight_increase_val_noeeprom();
-                setInfoLine("Val UP");
             } else {
                 rgblight_decrease_val_noeeprom();
-                setInfoLine("Val DOWN");
             }
         } else {
+            setInfoLine("Vol");
             if (clockwise) {
                 tap_code(KC_VOLU);
-                setInfoLine("Vol UP");
             } else {
                 tap_code(KC_VOLD);
-                setInfoLine("Vol DOWN");
             }
         }
     } else if (index == RIGHT_HALF_ENC2) {
+        setInfoLine("Scale");
         if (IS_LAYER_ON(3)) {
             if (clockwise) {
                 tap_code16(C(KC_EQL));
-                setInfoLine("Scale UP");
             } else {
                 tap_code16(C(KC_MINUS));
-                setInfoLine("Scale DOWN");
             }
         } else if (IS_LAYER_ON(1)) {
             if (clockwise) {
                 rgblight_step();
-                setInfoLine("RGB NEXT");
+                setInfoLine("RGB +: ");
+                appendInfoLine(rgblight_get_mode());
             } else {
                 rgblight_step_reverse();
-                setInfoLine("RGB PREV");
+                setInfoLine("RGB -: ");
+                appendInfoLine(rgblight_get_mode());
             }
+            return true;
         } else if (IS_LAYER_ON(2)) {
+            setInfoLine("OLED");
             if (clockwise) {
                 oled_set_brightness(oled_get_brightness() + 10);
-                setInfoLine("OLED UP");
             } else {
                 oled_set_brightness(oled_get_brightness() - 10);
-                setInfoLine("OLED DOWN");
             }
         } else {
+            setInfoLine("Wheel");
             if (clockwise) {
                 tap_code(KC_WH_D);
-                setInfoLine("Wheel UP");
             } else {
                 tap_code(KC_WH_U);
-                setInfoLine("Wheel DOWN");
             }
         }
+    }
+    if (clockwise) {
+        strcat(infoLine, " +");
+    } else {
+        strcat(infoLine, " -");
     }
     return true;
 }
