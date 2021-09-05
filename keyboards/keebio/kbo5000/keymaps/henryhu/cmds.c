@@ -19,7 +19,7 @@ void cmd_ver(char* cmd, char* buf, int size) {
 
 #ifdef ENABLE_UPTIME
 void cmd_uptime(char* cmd, char* buf, int size) {
-    utoa(timer_read32() / ms_per_min, buf, 10);
+    appendValue(buf, timer_read32() / ms_per_min);
     strcat(buf, "m");
 }
 #endif
@@ -37,7 +37,7 @@ void append_attr_state(char* buf, const char* name, const bool value) {
 
 void append_attr_value(char* buf, const char* name, const uint8_t value) {
     append_attr_name(buf, name);
-    utoa(value, buf + strlen(buf), 10);
+    appendValue(buf, value);
 }
 
 void cmd_info(char* cmd, char* buf, int size) {
@@ -67,7 +67,7 @@ void cmd_speed(char* cmd, char* buf, int size) {
     int arg = atoi(cmd + 6);
     rgblight_set_speed(arg);
     strcat(buf, "Speed:");
-    utoa(arg, buf + strlen(buf), 10);
+    appendValue(buf, arg);
 }
 #endif
 

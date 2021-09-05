@@ -16,10 +16,10 @@ void get_time(char* buf) {
     const uint8_t min = now_min - hour * min_per_hour;
     buf[0] = 0;
     if (hour < 10) strcat(buf, " ");
-    utoa(hour, buf + strlen(buf), 10);
+    appendValue(buf, hour);
     strcat(buf, ":");
     if (min < 10) strcat(buf, "0");
-    utoa(min, buf + strlen(buf), 10);
+    appendValue(buf, min);
 }
 
 void cmd_time(char* cmd, char* buf, int size) {
