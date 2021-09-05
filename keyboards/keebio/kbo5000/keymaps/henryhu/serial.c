@@ -1,6 +1,8 @@
 #include QMK_KEYBOARD_H
 #include "serial.h"
 
+#include <string.h>
+
 #ifdef ENABLE_SERIAL
 #include "virtser.h"
 

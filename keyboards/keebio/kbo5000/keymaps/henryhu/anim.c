@@ -26,11 +26,13 @@ void clear_canvas(uint8_t start_x, uint8_t x_len,
     }
 }
 
-int frame = 0;
+uint8_t frame = 0, last_frame = 255;
 uint32_t last_frame_time = 0;
-int frame_time = 500;
+uint16_t frame_time = 500;
 
 void render_animation(uint8_t col, uint8_t row) {
+    if (frame == last_frame) return;
+    last_frame = frame;
     clear_canvas(col * OLED_FONT_WIDTH - 2, 4 * OLED_FONT_WIDTH + 4, row, 3);
     const uint8_t start = 0x80;
     const uint8_t lineLen = 0x20;

@@ -1,6 +1,7 @@
 #include QMK_KEYBOARD_H
 
 #include <stdbool.h>
+#include <string.h>
 
 #include "cmdmode.h"
 #include "oled.h"

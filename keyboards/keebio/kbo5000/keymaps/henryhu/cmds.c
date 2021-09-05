@@ -1,5 +1,7 @@
 #include QMK_KEYBOARD_H
 
+#include <string.h>
+
 #include "version.h"
 #include "cmds.h"
 
