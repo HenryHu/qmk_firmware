@@ -76,9 +76,9 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         } else if (IS_LAYER_ON(2)) {
             setInfoLine("OLED");
             if (clockwise) {
-                oled_set_brightness(oled_get_brightness() + 10);
+                oled_set_brightness(oled_get_brightness() + 25);
             } else {
-                oled_set_brightness(oled_get_brightness() - 10);
+                oled_set_brightness(oled_get_brightness() - 25);
             }
         } else {
             setInfoLine("Wheel");
