@@ -17,6 +17,9 @@
 #ifdef ENABLE_OLED
 char infoLine[22];
 
+const uint16_t idle_timeout = 60000;
+const uint16_t info_timeout = 5000;
+
 void setInfoLine(const char* buf) {
     strlcpy(infoLine, buf, sizeof(infoLine));
 }
@@ -62,11 +65,11 @@ void oled_task_user(void) {
     const uint32_t alarm_time = alarmTime();
     if (alarm_time < idle_time) idle_time = alarm_time;
 #endif
-    if (idle_time > 60000) {
+    if (idle_time > idle_timeout) {
         oled_off();
         return;
     }
-    if (idle_time > 5000) infoLine[0] = 0;
+    if (idle_time > info_timeout) infoLine[0] = 0;
 
     // 4 chars
     if (IS_LAYER_ON(3)) {
