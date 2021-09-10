@@ -939,9 +939,9 @@ void virtser_init(void) {
  * FIXME: Needs doc
  */
 void virtser_recv(uint8_t c) __attribute__((weak));
-void virtser_recv(uint8_t c) {
-    // Ignore by default
-}
+// void virtser_recv(uint8_t c) {
+//     // Ignore by default
+// }
 
 /** \brief Virtual Serial Task
  *
