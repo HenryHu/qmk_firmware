@@ -6,9 +6,9 @@
 
 #ifdef ENABLE_ALARM
 
-void setAlarm(int timeout);
+void setAlarm(int16_t timeout);
 bool alarmArmed(void);
-uint32_t alarmRemaining(void);
+int16_t alarmRemaining(void);
 uint32_t alarmTime(void);
 bool alarmTriggered(void);
 void alarmKey(void);

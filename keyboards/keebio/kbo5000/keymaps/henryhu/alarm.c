@@ -10,19 +10,19 @@
 #ifdef ENABLE_ALARM
 uint32_t last_alarm_time = 0;
 uint32_t alarmStart = 0;
-uint32_t alarmLimit = 0;
+int16_t alarmLimit = 0;
 
-void setAlarm(int timeout) {
+void setAlarm(int16_t timeout) {
     alarmStart = timer_read32();
-    alarmLimit = timeout * ms_per_sec;
+    alarmLimit = timeout;
 }
 
 bool alarmArmed(void) {
     return alarmLimit != 0;
 }
 
-uint32_t alarmRemaining(void) {
-    return (alarmLimit - timer_elapsed32(alarmStart)) / ms_per_sec;
+int16_t alarmRemaining(void) {
+    return alarmLimit - timer_elapsed32(alarmStart) / ms_per_sec;
 }
 
 uint32_t alarmTime(void) {
@@ -30,7 +30,7 @@ uint32_t alarmTime(void) {
 }
 
 bool alarmTriggered(void) {
-    if (alarmArmed() && timer_elapsed32(alarmStart) > alarmLimit) {
+    if (alarmArmed() && alarmRemaining() < 0) {
         last_alarm_time = timer_read32();
         alarmLimit = 0;
         return true;
@@ -41,7 +41,7 @@ bool alarmTriggered(void) {
 void alarmKey(void) {
     if (!alarmArmed()) {
         setAlarm(10);
-    } else if (alarmLimit == 10000) {
+    } else if (alarmLimit == 10) {
         setAlarm(60);
     }
 }
