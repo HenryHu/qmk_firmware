@@ -16,6 +16,7 @@
 
 #ifdef ENABLE_OLED
 char infoLine[22];
+const uint8_t infoLineLen = 22;
 
 const uint16_t idle_timeout = 60000;
 const uint16_t info_timeout = 5000;
@@ -36,8 +37,8 @@ void get_infoline(void) {
         strcat(infoLine, "s");
     }
 #endif
-    size_t len = strlen(infoLine);
-    for (size_t j = len; j < sizeof(infoLine); ++j) infoLine[j] = ' ';
+    uint8_t len = strlen(infoLine);
+    for (uint8_t j = len; j < sizeof(infoLine); ++j) infoLine[j] = ' ';
     infoLine[sizeof(infoLine) - 1] = 0;
 }
 
@@ -69,7 +70,8 @@ void oled_task_user(void) {
         oled_off();
         return;
     }
-    if (idle_time > info_timeout) infoLine[0] = 0;
+    const uint16_t idle_time_16 = idle_time;
+    if (idle_time_16 > info_timeout) infoLine[0] = 0;
 
     // 3 chars
     if (IS_LAYER_ON(3)) {
@@ -113,7 +115,7 @@ void oled_task_user(void) {
     // render_logo(17, 0);
 
     if (!anime_pause) {
-        pick_frame(idle_time);
+        pick_frame(idle_time_16);
     }
     render_animation(17, 0);
 #endif

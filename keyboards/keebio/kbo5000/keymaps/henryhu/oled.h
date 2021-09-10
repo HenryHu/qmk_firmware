@@ -4,6 +4,7 @@
 
 #ifdef ENABLE_OLED
 extern char infoLine[22];
+extern const uint8_t infoLineLen;
 void shutdown_oled(void);
 #endif
 

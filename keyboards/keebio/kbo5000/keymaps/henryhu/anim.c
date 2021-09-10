@@ -80,7 +80,7 @@ void neko_awake(void) {
     frame_time = 100;
 }
 
-void pick_frame(uint32_t idle_time) {
+void pick_frame(uint16_t idle_time) {
     uint32_t now = timer_read32();
     if (now < last_frame_time + frame_time && idle_time > 100) {
         return;
@@ -89,14 +89,11 @@ void pick_frame(uint32_t idle_time) {
     if (idle_time > 30000) {
         neko_sleep();
         return;
-    }
-
-    uint16_t idle_time_16 = idle_time;
-    if (idle_time_16 > 15000) {
+    } else if (idle_time > 15000) {
         neko_scratch();
-    } else if (idle_time_16 > 5000) {
+    } else if (idle_time > 5000) {
         neko_flap();
-    } else if (idle_time_16 > 100 && idle_time_16 < 5000) {
+    } else if (idle_time > 100 && idle_time < 5000) {
         neko_idle();
     } else {
         neko_awake();

@@ -73,7 +73,7 @@ void cmd_unknown(char* cmd, char* buf, int size) {
 
 #ifdef ENABLE_STATUS
 void cmd_status(char* cmd, char* buf, int size) {
-    int i = 0, ptr = 7;
+    uint8_t i = 0, ptr = 7;
     for (i = 0; i < sizeof(statusLine) && cmd[ptr] != 0; ++i, ++ptr) {
         statusLine[i] = cmd[ptr];
     }

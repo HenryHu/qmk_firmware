@@ -10,7 +10,7 @@
 #include "cmdmode.h"
 
 char serialBuffer[32];
-int serialPtr = 0;
+uint8_t serialPtr = 0;
 
 void serial_send(const char* str) {
     while (*str != 0) {
@@ -25,7 +25,7 @@ void process_serial_command(void) {
     cmdRet[1] = ' ';
     cmdRet[2] = 0;
     handle_command(serialBuffer, cmdRet + 2, sizeof(cmdRet) - 2);
-    strcat(cmdRet, "\r\n");
+    strcat(cmdRet, "\n");
     serial_send(cmdRet);
 }
 
@@ -34,21 +34,20 @@ void virtser_recv(uint8_t in) {
         case 10:
         case 13:
             if (serialPtr == 0) break;
-            serial_send("\r\n");
+            serial_send("\n");
             if (serialPtr >= sizeof(serialBuffer)) serialPtr = sizeof(serialBuffer) - 1;
             serialBuffer[serialPtr] = 0;
             process_serial_command();
             serialPtr = 0;
-            break;
+            return;
         case 8:
         case 127:
             if (serialPtr > 0) --serialPtr;
-            virtser_send(in);
             break;
         default:
             if (serialPtr >= sizeof(serialBuffer) - 1) return;
             serialBuffer[serialPtr++] = in;
-            virtser_send(in);
     }
+    virtser_send(in);
 }
 #endif

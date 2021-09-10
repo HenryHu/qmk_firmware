@@ -12,6 +12,7 @@ enum encoder_names {
 };
 
 const uint16_t init_time = 500;
+const uint8_t oled_brightness_step = 25;
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
     if (timer_read() < init_time) return true;
@@ -76,9 +77,9 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         } else if (IS_LAYER_ON(2)) {
             setInfoLine("OLED");
             if (clockwise) {
-                oled_set_brightness(oled_get_brightness() + 25);
+                oled_set_brightness(oled_get_brightness() + oled_brightness_step);
             } else {
-                oled_set_brightness(oled_get_brightness() - 25);
+                oled_set_brightness(oled_get_brightness() - oled_brightness_step);
             }
         } else {
             setInfoLine("Wheel");

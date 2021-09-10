@@ -40,14 +40,14 @@ bool process_key_down(uint16_t keycode, keyrecord_t *record) {
     return true;
 }
 
-void send_string_lite(const char* buf, const int len) {
+void send_string_lite(const char* buf) {
     bool shift = false;
-    for (int i = 0; i < len; ++i) {
-        if (buf[i] == KC_LSFT) {
-            if (shift) unregister_code(buf[i]); else register_code(buf[i]);
+    for (; *buf; ++buf) {
+        if (*buf == KC_LSFT) {
+            if (shift) unregister_code(*buf); else register_code(*buf);
             shift = !shift;
         } else {
-            tap_code(buf[i]);
+            tap_code(*buf);
         }
     }
 }
@@ -56,16 +56,16 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
 #ifdef ENABLE_MACRO
         case MACRO1:
-            send_string_lite(MACRO1_STRING, sizeof(MACRO1_STRING));
+            send_string_lite(MACRO1_STRING);
             break;
         case MACRO2:
-            send_string_lite(MACRO2_STRING, sizeof(MACRO2_STRING));
+            send_string_lite(MACRO2_STRING);
             break;
         case MACRO3:
-            send_string_lite(MACRO3_STRING, sizeof(MACRO3_STRING));
+            send_string_lite(MACRO3_STRING);
             break;
         case MACRO4:
-            send_string_lite(MACRO4_STRING, sizeof(MACRO4_STRING));
+            send_string_lite(MACRO4_STRING);
             break;
 #endif
 #ifdef ENABLE_ALARM
