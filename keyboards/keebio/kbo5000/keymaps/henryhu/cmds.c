@@ -42,13 +42,8 @@ void append_attr_value(char* buf, const char* name, const uint8_t value) {
 
 void cmd_info(char* cmd, char* buf, int size) {
     strcat(buf, QMK_KEYBOARD "\n" STR(MANUFACTURER) " " STR(PRODUCT) "\n");
-#ifdef NKRO_ENABLE
-    append_attr_state(buf, "nkro", keymap_config.nkro);
-#endif
 }
-#endif
 
-#ifdef ENABLE_INFO
 void cmd_rgb(char* cmd, char* buf, int size) {
     if (!rgblight_is_enabled()) {
         strcat(buf, "OFF");

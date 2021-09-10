@@ -71,15 +71,15 @@ void oled_task_user(void) {
     }
     if (idle_time > info_timeout) infoLine[0] = 0;
 
-    // 4 chars
+    // 3 chars
     if (IS_LAYER_ON(3)) {
-        oled_write("XOP ", false);
+        oled_write("XOP", false);
     } else if (IS_LAYER_ON(2)) {
-        oled_write("SUP ", false);
+        oled_write("SUP", false);
     } else if (IS_LAYER_ON(1)) {
-        oled_write("HYP ", false);
+        oled_write("HYP", false);
     } else {
-        oled_write("    ", false);
+        oled_write("   ", false);
     }
 
     // 9/12 chars
@@ -89,6 +89,9 @@ void oled_task_user(void) {
     oled_write_led_state(led_state.num_lock, "NUM");
 #ifdef ENABLE_CMDMODE
     oled_write_led_state(command_mode, "CMD");
+#endif
+#ifdef NKRO_ENABLE
+    oled_write(keymap_config.nkro ? "N" : " ", false);
 #endif
 
     // 11 chars
