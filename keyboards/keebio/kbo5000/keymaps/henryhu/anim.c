@@ -88,11 +88,15 @@ void pick_frame(uint32_t idle_time) {
     last_frame_time = now;
     if (idle_time > 30000) {
         neko_sleep();
-    } else if (idle_time > 15000) {
+        return;
+    }
+
+    uint16_t idle_time_16 = idle_time;
+    if (idle_time_16 > 15000) {
         neko_scratch();
-    } else if (idle_time > 5000) {
+    } else if (idle_time_16 > 5000) {
         neko_flap();
-    } else if (idle_time > 100 && idle_time < 5000) {
+    } else if (idle_time_16 > 100 && idle_time_16 < 5000) {
         neko_idle();
     } else {
         neko_awake();
