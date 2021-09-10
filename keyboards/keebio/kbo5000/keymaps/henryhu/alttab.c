@@ -9,8 +9,10 @@
 bool is_alt_tab_active = false;
 uint16_t alt_tab_timer = 0;
 
+const uint16_t alt_tab_timeout = 300;
+
 void alttab_scan(void) {
-    if (is_alt_tab_active && timer_elapsed(alt_tab_timer) > 300) {
+    if (is_alt_tab_active && timer_elapsed(alt_tab_timer) > alt_tab_timeout) {
         is_alt_tab_active = false;
         unregister_code(KC_LALT);
     }
