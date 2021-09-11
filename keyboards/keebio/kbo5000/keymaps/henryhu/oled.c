@@ -98,9 +98,11 @@ void oled_task_user(void) {
 
     // 11 chars
     oled_set_cursor(0, 1);
-    oled_write(get_mods() & MOD_MASK_SHIFT ? "SFT" : "   ", false);
-    oled_write(get_mods() & MOD_MASK_CTRL ? " CTL" : "    ", false);
-    oled_write(get_mods() & MOD_MASK_ALT ? " ALT" : "    ", false);
+    const uint8_t mods = get_mods();
+    oled_write(mods & MOD_MASK_SHIFT ? "SFT" : "   ", false);
+    oled_write(mods & MOD_MASK_CTRL ? " CTL" : "    ", false);
+    oled_write(mods & MOD_MASK_GUI ? "W" : " ", false);
+    oled_write(mods & MOD_MASK_ALT ? "ALT" : "   ", false);
 
 #ifdef ENABLE_CLOCK
     // 5 chars
@@ -110,7 +112,7 @@ void oled_task_user(void) {
 #endif
 
 #ifdef ENABLE_NEKO
-    const bool anime_pause = get_mods() & MOD_MASK_CTRL;
+    const bool anime_pause = mods & MOD_MASK_CTRL;
 
     // render_logo(17, 0);
 
