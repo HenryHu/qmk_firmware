@@ -122,6 +122,8 @@ void handle_command(char* input, char* buf, int size) {
         PGM_P name = (PGM_P)pgm_read_word(&cmd->name);
         if (name == 0) break;
         if (memcmp_P(input, name, strlen_P(name)) == 0) {
+            infoLine[0] = '!';
+            strlcpy_P(infoLine + 1, name, sizeof(infoLine) - 1);
             handler_t handler = (handler_t)pgm_read_word(&cmd->handler);
             return handler(input, buf, size);
         }
