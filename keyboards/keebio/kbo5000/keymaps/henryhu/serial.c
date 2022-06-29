@@ -9,8 +9,13 @@
 #include "cmds.h"
 #include "cmdmode.h"
 
+#ifdef REUSE_CMDBUF
+#define serialBuffer cmdBuf
+#define serialPtr cmdPtr
+#else
 char serialBuffer[32];
 uint8_t serialPtr = 0;
+#endif
 
 void serial_send(const char* str) {
     while (*str != 0) {

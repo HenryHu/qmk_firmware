@@ -9,7 +9,7 @@
 
 #ifdef ENABLE_CMDMODE
 bool command_mode = false;
-char cmdBuf[64];
+char cmdBuf[32];
 uint8_t cmdPtr = 0;
 char cmdRet[64];
 uint8_t cmdRetPtr = 0;

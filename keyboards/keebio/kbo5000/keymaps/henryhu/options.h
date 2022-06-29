@@ -18,3 +18,5 @@
 #if defined(ENABLE_CMDMODE)
 #define ENABLE_OLED
 #endif
+
+#define REUSE_CMDBUF
