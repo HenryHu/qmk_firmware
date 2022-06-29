@@ -1,5 +1,6 @@
 #define ENABLE_CLOCK  // 320B
-#define ENABLE_INFO   // 360B
+#define ENABLE_INFO   //  74B
+#define ENABLE_RGBINFO// 190B
 #define ENABLE_ALARM  // 500B
 // #define ENABLE_SPEED
 #define ENABLE_NEKO   // 480B + font
@@ -16,6 +17,9 @@
 #endif
 
 #if defined(ENABLE_CMDMODE)
+#ifndef ENABLE_OLED
+#warning CMDMODE depends on OLED
+#endif
 #define ENABLE_OLED
 #endif
 

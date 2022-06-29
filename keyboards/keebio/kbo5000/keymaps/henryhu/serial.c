@@ -9,12 +9,19 @@
 #include "cmds.h"
 #include "cmdmode.h"
 
-#ifdef REUSE_CMDBUF
+#if defined(REUSE_CMDBUF) && defined(ENABLE_CMDMODE)
 #define serialBuffer cmdBuf
 #define serialPtr cmdPtr
 #else
+#ifdef REUSE_CMDBUF
+#warning REUSE_CMDBUF depends on ENABLE_CMDMODE
+#endif
 char serialBuffer[32];
 uint8_t serialPtr = 0;
+#endif
+
+#ifndef ENABLE_CMDMODE
+char cmdRet[32];
 #endif
 
 void serial_send(const char* str) {
