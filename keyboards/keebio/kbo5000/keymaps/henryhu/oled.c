@@ -133,6 +133,17 @@ void oled_task_user(void) {
     oled_write(statusLine, false);
 #endif
 
+#ifdef ENABLE_CMDMODE
+    oled_set_cursor(0, 6);
+    if (command_mode) {
+        oled_write_P(PSTR("> "), false);
+        oled_write(cmdBuf, false);
+        oled_write_ln_P(PSTR("_"), false);
+    } else {
+        oled_write_ln_P(PSTR(""), false);
+    }
+#endif
+
     get_infoline();
     oled_set_cursor(0, 7);
     oled_write(infoLine, false);

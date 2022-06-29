@@ -81,7 +81,6 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
 #ifdef ENABLE_CMDMODE
         case CMD_MODE:
             command_mode = !command_mode;
-            setInfoLine("?_");
             break;
         default:
             if (command_mode) {

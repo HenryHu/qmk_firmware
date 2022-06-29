@@ -81,9 +81,11 @@ bool command_mode_key(uint8_t keycode, keyrecord_t *record) {
             return true;
         }
     }
+    /*
     infoLine[0] = '?';
     strlcpy(infoLine + 1, cmdBuf, sizeof(infoLine) - 2);
     strcat_P(infoLine, PSTR("_"));
+    */
     return false;
 }
 
