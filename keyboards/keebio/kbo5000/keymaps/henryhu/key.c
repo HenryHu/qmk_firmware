@@ -40,14 +40,14 @@ bool process_key_down(uint16_t keycode, keyrecord_t *record) {
     return true;
 }
 
-void send_string_lite(const char* buf) {
+void send_string_lite(PGM_P buf) {
     bool shift = false;
-    for (; *buf; ++buf) {
-        if (*buf == KC_LSFT) {
-            if (shift) unregister_code(*buf); else register_code(*buf);
+    for (char ch = pgm_read_byte(buf); ch; ++buf, ch = pgm_read_byte(buf)) {
+        if (ch == KC_LSFT) {
+            if (shift) unregister_code(ch); else register_code(ch);
             shift = !shift;
         } else {
-            tap_code(*buf);
+            tap_code(ch);
         }
     }
 }
