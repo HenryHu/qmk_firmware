@@ -25,7 +25,6 @@ void cmd_uptime(char* cmd, char* buf, int size) {
 }
 #endif
 
-#ifdef ENABLE_INFO
 void append_attr_name(char* buf, PGM_P name) {
     strcat_P(buf, name);
     strcat_P(buf, PSTR(": "));
@@ -41,6 +40,7 @@ void append_attr_value(char* buf, PGM_P name, const uint8_t value) {
     appendValue(buf, value);
 }
 
+#ifdef ENABLE_INFO
 void cmd_info(char* cmd, char* buf, int size) {
     strcat_P(buf, PSTR(QMK_KEYBOARD));
 }
@@ -48,7 +48,9 @@ void cmd_info(char* cmd, char* buf, int size) {
 void cmd_prod(char* cmd, char* buf, int size) {
     strcat_P(buf, PSTR(STR(MANUFACTURER) " " STR(PRODUCT)));
 }
+#endif
 
+#ifdef ENABLE_RGBINFO
 void cmd_rgb(char* cmd, char* buf, int size) {
     if (!rgblight_is_enabled()) {
         strcat_P(buf, PSTR("OFF"));

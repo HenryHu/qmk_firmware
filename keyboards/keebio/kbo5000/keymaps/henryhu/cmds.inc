@@ -5,6 +5,8 @@
 #ifdef ENABLE_INFO
     DEFINE_COMMAND(info)
     DEFINE_COMMAND(prod)
+#endif
+#ifdef ENABLE_RGBINFO
     DEFINE_COMMAND(rgb)
 #endif
     DEFINE_COMMAND(help)
