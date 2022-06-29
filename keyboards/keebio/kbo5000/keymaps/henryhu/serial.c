@@ -25,7 +25,7 @@ void process_serial_command(void) {
     cmdRet[1] = ' ';
     cmdRet[2] = 0;
     handle_command(serialBuffer, cmdRet + 2, sizeof(cmdRet) - 2);
-    strcat(cmdRet, "\n");
+    strcat_P(cmdRet, PSTR("\n"));
     serial_send(cmdRet);
 }
 

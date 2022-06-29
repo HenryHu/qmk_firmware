@@ -20,10 +20,10 @@ void get_time(char* buf) {
     const uint8_t hour = hour_min.quot;
     const uint8_t min = hour_min.rem;
     buf[0] = 0;
-    if (hour < 10) strcat(buf, " ");
+    if (hour < 10) strcat_P(buf, PSTR(" "));
     appendValue(buf, hour_min.quot);
-    strcat(buf, ":");
-    if (min < 10) strcat(buf, "0");
+    strcat_P(buf, PSTR(":"));
+    if (min < 10) strcat_P(buf, PSTR("0"));
     appendValue(buf, min);
 }
 

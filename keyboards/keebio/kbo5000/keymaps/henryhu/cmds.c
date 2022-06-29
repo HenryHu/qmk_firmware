@@ -13,8 +13,9 @@
 #include "clock.h"
 
 #ifdef ENABLE_CMDS
+
 void cmd_ver(char* cmd, char* buf, int size) {
-    strcat(buf, QMK_VERSION "\n" QMK_BUILDDATE);
+    strcat_P(buf, PSTR(QMK_VERSION));
 }
 
 #ifdef ENABLE_UPTIME
@@ -25,35 +26,39 @@ void cmd_uptime(char* cmd, char* buf, int size) {
 #endif
 
 #ifdef ENABLE_INFO
-void append_attr_name(char* buf, const char* name) {
-    strcat(buf, name);
-    strcat(buf, ": ");
+void append_attr_name(char* buf, PGM_P name) {
+    strcat_P(buf, name);
+    strcat_P(buf, PSTR(": "));
 }
 
-void append_attr_state(char* buf, const char* name, const bool value) {
+void append_attr_state(char* buf, PGM_P name, const bool value) {
     append_attr_name(buf, name);
-    strcat(buf, value ? "YES" : "NO");
+    strcat_P(buf, value ? PSTR("YES") : PSTR("NO"));
 }
 
-void append_attr_value(char* buf, const char* name, const uint8_t value) {
+void append_attr_value(char* buf, PGM_P name, const uint8_t value) {
     append_attr_name(buf, name);
     appendValue(buf, value);
 }
 
 void cmd_info(char* cmd, char* buf, int size) {
-    strcat(buf, QMK_KEYBOARD "\n" STR(MANUFACTURER) " " STR(PRODUCT));
+    strcat_P(buf, PSTR(QMK_KEYBOARD));
+}
+
+void cmd_prod(char* cmd, char* buf, int size) {
+    strcat_P(buf, PSTR(STR(MANUFACTURER) " " STR(PRODUCT)));
 }
 
 void cmd_rgb(char* cmd, char* buf, int size) {
     if (!rgblight_is_enabled()) {
-        strcat(buf, "OFF");
+        strcat_P(buf, PSTR("OFF"));
         return;
     }
-    append_attr_value(buf, "mode", rgblight_get_mode());
-    append_attr_value(buf, " hue", rgblight_get_hue());
-    append_attr_value(buf, "\nsat", rgblight_get_sat());
-    append_attr_value(buf, " val", rgblight_get_val());
-    append_attr_value(buf, "\nspd", rgblight_get_speed());
+    append_attr_value(buf, PSTR("M"), rgblight_get_mode());
+    append_attr_value(buf, PSTR(" P"), rgblight_get_speed());
+    append_attr_value(buf, PSTR("\nH"), rgblight_get_hue());
+    append_attr_value(buf, PSTR(" S"), rgblight_get_sat());
+    append_attr_value(buf, PSTR(" V"), rgblight_get_val());
 }
 #endif
 
@@ -61,13 +66,13 @@ void cmd_rgb(char* cmd, char* buf, int size) {
 void cmd_speed(char* cmd, char* buf, int size) {
     int arg = atoi(cmd + 6);
     rgblight_set_speed(arg);
-    strcat(buf, "Speed:");
+    strcat_P(buf, PSTR("Speed:"));
     appendValue(buf, arg);
 }
 #endif
 
 void cmd_unknown(char* cmd, char* buf, int size) {
-    strcat(buf, "?: ");
+    strcat_P(buf, PSTR("?: "));
     strcat(buf, cmd);
 }
 
@@ -81,63 +86,26 @@ void cmd_status(char* cmd, char* buf, int size) {
 }
 #endif
 
-void cmd_help(char* cmd, char* buf, int size);
-
-typedef struct command {
-    const char* cmd;
-    void (*handler) (char* cmd, char* buf, int size);
-} command_t;
-
-#define DEFINE_COMMAND(name) {#name, cmd_##name}
-
-command_t commands[] = {
-    DEFINE_COMMAND(ver),
-#ifdef ENABLE_UPTIME
-    DEFINE_COMMAND(uptime),
-#endif
-#ifdef ENABLE_INFO
-    DEFINE_COMMAND(info),
-    DEFINE_COMMAND(rgb),
-#endif
-    DEFINE_COMMAND(help),
-#ifdef ENABLE_ALARM
-    DEFINE_COMMAND(alarm),
-#endif
-#ifdef ENABLE_SPEED
-    DEFINE_COMMAND(speed),
-#endif
-#ifdef ENABLE_STATUS
-    DEFINE_COMMAND(status),
-#endif
-#ifdef ENABLE_CLOCK
-    DEFINE_COMMAND(time),
-#endif
-#ifdef ENABLE_CMDMODE
-    DEFINE_COMMAND(exit),
-#endif
-    {NULL, NULL},
-};
-
-const uint8_t numCommands = sizeof(commands) / sizeof(command_t);
-
 void cmd_help(char* cmd, char* buf, int size) {
-    strcat(buf, "cmds: ");
-    for (uint8_t i = 0; i < numCommands; ++i) {
-        strcat(buf, commands[i].cmd);
-        strcat(buf, " ");
-    }
+    strcat_P(buf, PSTR("cmds: "));
+#define DEFINE_COMMAND(name) { \
+    strcat_P(buf, PSTR(#name)); \
+    strcat_P(buf, PSTR(" ")); \
+}
+#include "cmds.inc"
+#undef DEFINE_COMMAND
 }
 
 void handle_command(char* cmd, char* buf, int size) {
-    for (command_t* command = &commands[0]; command->handler != NULL; ++command) {
-        if (memcmp(cmd, command->cmd, strlen(command->cmd)) == 0) {
-#ifdef ENABLE_OLED
-            infoLine[0] = '!';
-            strlcpy(infoLine + 1, command->cmd, sizeof(infoLine) - 1);
-#endif
-            return (*command->handler)(cmd, buf, size);
-        }
-    }
+#define DEFINE_COMMAND(name) { \
+    if (memcmp_P(cmd, PSTR(#name), strlen_P(PSTR(#name))) == 0) { \
+        infoLine[0] = '!'; \
+        strlcpy_P(infoLine + 1, PSTR(#name), sizeof(infoLine) - 1); \
+        return cmd_##name(cmd, buf, size); \
+    } \
+}
+#include "cmds.inc"
+#undef DEFINE_COMMAND
     cmd_unknown(cmd, buf, size);
 }
 #endif // ENABLE_CMDS

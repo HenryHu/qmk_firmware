@@ -83,9 +83,10 @@ bool command_mode_key(uint8_t keycode, keyrecord_t *record) {
     }
     infoLine[0] = '?';
     strlcpy(infoLine + 1, cmdBuf, sizeof(infoLine) - 2);
-    strcat(infoLine, "_");
+    strcat_P(infoLine, PSTR("_"));
     return false;
 }
+
 
 void cmd_exit(char* cmd, char* buf, int size) {
     command_mode = false;

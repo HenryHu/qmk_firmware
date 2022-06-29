@@ -25,6 +25,10 @@ void setInfoLine(const char* buf) {
     strlcpy(infoLine, buf, sizeof(infoLine));
 }
 
+void setInfoLine_P(PGM_P buf) {
+    strlcpy_P(infoLine, buf, sizeof(infoLine));
+}
+
 void appendInfoLine(const uint16_t value) {
     appendValue(infoLine, value);
 }
@@ -32,9 +36,9 @@ void appendInfoLine(const uint16_t value) {
 void get_infoline(void) {
 #ifdef ENABLE_ALARM
     if (alarmArmed()) {
-        setInfoLine("Alarm: ");
+        setInfoLine_P(PSTR("Alarm: "));
         appendInfoLine(alarmRemaining());
-        strcat(infoLine, "s");
+        strcat_P(infoLine, PSTR("s"));
     }
 #endif
     uint8_t len = strlen(infoLine);
