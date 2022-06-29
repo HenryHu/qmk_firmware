@@ -60,8 +60,8 @@ void render_logo(uint8_t col, uint8_t row) {
     oled_write_P(qmk_logo[2], false);
 }
 
-void oled_write_led_state(bool led_state, const char* name) {
-    oled_write(led_state ? name : "   ", led_state);
+void oled_write_led_state(bool led_state, PGM_P name) {
+    oled_write_P(led_state ? name : PSPACE_3, led_state);
 }
 
 void oled_task_user(void) {
@@ -79,39 +79,40 @@ void oled_task_user(void) {
 
     // 3 chars
     if (IS_LAYER_ON(3)) {
-        oled_write("XOP", false);
+        oled_write_P(PSTR("XOP"), false);
     } else if (IS_LAYER_ON(2)) {
-        oled_write("SUP", false);
+        oled_write_P(PSTR("SUP"), false);
     } else if (IS_LAYER_ON(1)) {
-        oled_write("HYP", false);
+        oled_write_P(PSTR("HYP"), false);
     } else {
-        oled_write("   ", false);
+        oled_write_P(PSPACE_3, false);
     }
 
     // 9/12 chars
     const led_t led_state = host_keyboard_led_state();
-    oled_write_led_state(led_state.caps_lock, "CAP");
-    oled_write_led_state(led_state.scroll_lock, "SCR");
-    oled_write_led_state(led_state.num_lock, "NUM");
+    oled_write_led_state(led_state.caps_lock, PSTR("CAP"));
+    oled_write_led_state(led_state.scroll_lock, PSTR("SCR"));
+    oled_write_led_state(led_state.num_lock, PSTR("NUM"));
 #ifdef ENABLE_CMDMODE
-    oled_write_led_state(command_mode, "CMD");
+    oled_write_led_state(command_mode, PSTR("CMD"));
 #endif
 #ifdef NKRO_ENABLE
-    oled_write(keymap_config.nkro ? "N" : " ", false);
+    oled_write_P(keymap_config.nkro ? PSTR("N") : PSPACE, false);
 #endif
 
     // 11 chars
     oled_set_cursor(0, 1);
     const uint8_t mods = get_mods();
-    oled_write(mods & MOD_MASK_SHIFT ? "SFT" : "   ", false);
-    oled_write(mods & MOD_MASK_CTRL ? " CTL" : "    ", false);
-    oled_write(mods & MOD_MASK_GUI ? "W" : " ", false);
-    oled_write(mods & MOD_MASK_ALT ? "ALT" : "   ", false);
+    oled_write_P(mods & MOD_MASK_SHIFT ? PSTR("SFT") : PSPACE_3, false);
+    oled_write_P(mods & MOD_MASK_CTRL ? PSTR(" CTL") : PSPACE_4, false);
+    oled_write_P(mods & MOD_MASK_GUI ? PSTR(" WIN") : PSPACE_4, false);
+    oled_write_P(mods & MOD_MASK_ALT ? PSTR(" ALT") : PSPACE_4, false);
 
 #ifdef ENABLE_CLOCK
     // 5 chars
     char buf[7];
     get_time(buf);
+    oled_set_cursor(16, 4);
     oled_write(buf, false);
 #endif
 
@@ -127,18 +128,19 @@ void oled_task_user(void) {
 #endif
 
 #ifdef ENABLE_STATUS
-    oled_set_cursor(0, 2);
+    oled_set_cursor(0, 5);
     statusLine[sizeof(statusLine) - 1] = 0;
     oled_write(statusLine, false);
 #endif
 
     get_infoline();
-    oled_set_cursor(0, 3);
+    oled_set_cursor(0, 7);
     oled_write(infoLine, false);
 }
 
 void shutdown_oled(void) {
-    oled_write("RESET", false);
+    oled_set_cursor(0, 0);
+    oled_write_P(PSTR("RESET"), false);
     oled_render();
 }
 #else
