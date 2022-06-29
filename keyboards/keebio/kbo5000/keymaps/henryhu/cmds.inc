@@ -1,25 +1,25 @@
-    DEFINE_COMMAND(ver);
+    DEFINE_COMMAND(ver)
 #ifdef ENABLE_UPTIME
-    DEFINE_COMMAND(uptime);
+    DEFINE_COMMAND(uptime)
 #endif
 #ifdef ENABLE_INFO
-    DEFINE_COMMAND(info);
-    DEFINE_COMMAND(prod);
-    DEFINE_COMMAND(rgb);
+    DEFINE_COMMAND(info)
+    DEFINE_COMMAND(prod)
+    DEFINE_COMMAND(rgb)
 #endif
-    DEFINE_COMMAND(help);
+    DEFINE_COMMAND(help)
 #ifdef ENABLE_ALARM
-    DEFINE_COMMAND(alarm);
+    DEFINE_COMMAND(alarm)
 #endif
 #ifdef ENABLE_SPEED
-    DEFINE_COMMAND(speed);
+    DEFINE_COMMAND(speed)
 #endif
 #ifdef ENABLE_STATUS
-    DEFINE_COMMAND(status);
+    DEFINE_COMMAND(status)
 #endif
 #ifdef ENABLE_CLOCK
-    DEFINE_COMMAND(time);
+    DEFINE_COMMAND(time)
 #endif
 #ifdef ENABLE_CMDMODE
-    DEFINE_COMMAND(exit);
+    DEFINE_COMMAND(exit)
 #endif

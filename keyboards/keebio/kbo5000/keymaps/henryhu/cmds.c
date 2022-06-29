@@ -86,26 +86,46 @@ void cmd_status(char* cmd, char* buf, int size) {
 }
 #endif
 
-void cmd_help(char* cmd, char* buf, int size) {
-    strcat_P(buf, PSTR("cmds: "));
-#define DEFINE_COMMAND(name) { \
-    strcat_P(buf, PSTR(#name)); \
-    strcat_P(buf, PSTR(" ")); \
-}
+typedef void(*handler_t)(char*, char*, int);
+
+typedef struct {
+    PGM_P name;
+    handler_t handler;
+} cmd_t;
+
+void cmd_help(char* cmd, char* buf, int size);
+
+#define DEFINE_COMMAND(name) \
+    const char cmdname_##name[] PROGMEM = #name;
 #include "cmds.inc"
 #undef DEFINE_COMMAND
+const cmd_t cmds[] PROGMEM = {
+#define DEFINE_COMMAND(name) \
+    {cmdname_##name, cmd_##name},
+#include "cmds.inc"
+#undef DEFINE_COMMAND
+    {0, 0},
+};
+
+void cmd_help(char* cmd, char* buf, int size) {
+    strcat_P(buf, PSTR("cmds:"));
+    for (const cmd_t* cmd = &cmds[0]; ; ++cmd) {
+        PGM_P name = (PGM_P)pgm_read_word(&cmd->name);
+        if (name == 0) break;
+        strcat_P(buf, PSPACE);
+        strcat_P(buf, name);
+    }
 }
 
-void handle_command(char* cmd, char* buf, int size) {
-#define DEFINE_COMMAND(name) { \
-    if (memcmp_P(cmd, PSTR(#name), strlen_P(PSTR(#name))) == 0) { \
-        infoLine[0] = '!'; \
-        strlcpy_P(infoLine + 1, PSTR(#name), sizeof(infoLine) - 1); \
-        return cmd_##name(cmd, buf, size); \
-    } \
-}
-#include "cmds.inc"
-#undef DEFINE_COMMAND
-    cmd_unknown(cmd, buf, size);
+void handle_command(char* input, char* buf, int size) {
+    for (const cmd_t* cmd = &cmds[0]; ; ++cmd) {
+        PGM_P name = (PGM_P)pgm_read_word(&cmd->name);
+        if (name == 0) break;
+        if (memcmp_P(input, name, strlen_P(name)) == 0) {
+            handler_t handler = (handler_t)pgm_read_word(&cmd->handler);
+            return handler(input, buf, size);
+        }
+    }
+    cmd_unknown(input, buf, size);
 }
 #endif // ENABLE_CMDS
