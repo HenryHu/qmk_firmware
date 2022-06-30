@@ -27,4 +27,6 @@
 #endif
 #ifdef ENABLE_I2C
     DEFINE_COMMAND(scan)
+    DEFINE_COMMAND(addr)
+    DEFINE_COMMAND(send)
 #endif
