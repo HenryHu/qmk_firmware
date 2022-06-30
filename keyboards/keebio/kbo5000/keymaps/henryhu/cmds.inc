@@ -25,3 +25,6 @@
 #ifdef ENABLE_CMDMODE
     DEFINE_COMMAND(exit)
 #endif
+#ifdef ENABLE_I2C
+    DEFINE_COMMAND(scan)
+#endif

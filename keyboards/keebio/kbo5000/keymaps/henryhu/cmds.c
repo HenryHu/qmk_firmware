@@ -11,6 +11,7 @@
 #include "status.h"
 #include "cmdmode.h"
 #include "clock.h"
+#include "i2c.h"
 
 #ifdef ENABLE_CMDS
 
