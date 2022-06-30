@@ -29,4 +29,5 @@
     DEFINE_COMMAND(scan)
     DEFINE_COMMAND(addr)
     DEFINE_COMMAND(send)
+    DEFINE_COMMAND(recv)
 #endif

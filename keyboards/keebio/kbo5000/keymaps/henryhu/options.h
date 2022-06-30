@@ -9,7 +9,7 @@
 #define ENABLE_OLED   // 3.7K
 #define ENABLE_ALTTAB //  90B
 #define ENABLE_MACRO  // 250B
-#define ENABLE_SERIAL // 1.6K + cmds
+// #define ENABLE_SERIAL // 1.6K + cmds
 #define ENABLE_CMDMODE// 550B + cmds
 #define ENABLE_I2C
 
