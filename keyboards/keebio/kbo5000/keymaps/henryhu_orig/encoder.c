@@ -27,21 +27,21 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     } else */
     if (index == RIGHT_HALF_ENC1) {
         if (IS_LAYER_ON(3)) {
-            setInfoLine_P(PSTR("Hue"));
+            setInfoLine("Hue");
             if (clockwise) {
                 rgblight_increase_hue();
             } else {
                 rgblight_decrease_hue();
             }
         } else if (IS_LAYER_ON(1)) {
-            setInfoLine_P(PSTR("Sat"));
+            setInfoLine("Sat");
             if (clockwise) {
                 rgblight_increase_sat_noeeprom();
             } else {
                 rgblight_decrease_sat_noeeprom();
             }
         } else if (IS_LAYER_ON(2)) {
-            setInfoLine_P(PSTR("Val"));
+            setInfoLine("Val");
             if (clockwise) {
                 rgblight_increase_val_noeeprom();
             } else {
@@ -91,9 +91,9 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         }
     }
     if (clockwise) {
-        strcat_P(infoLine, PSTR(" +"));
+        strcat(infoLine, " +");
     } else {
-        strcat_P(infoLine, PSTR(" -"));
+        strcat(infoLine, " -");
     }
     return true;
 }

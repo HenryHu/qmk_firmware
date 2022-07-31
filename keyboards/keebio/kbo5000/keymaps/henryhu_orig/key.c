@@ -40,14 +40,14 @@ bool process_key_down(uint16_t keycode, keyrecord_t *record) {
     return true;
 }
 
-void send_string_lite(PGM_P buf) {
+void send_string_lite(const char* buf) {
     bool shift = false;
-    for (char ch = pgm_read_byte(buf); ch; ++buf, ch = pgm_read_byte(buf)) {
-        if (ch == KC_LSFT) {
-            if (shift) unregister_code(ch); else register_code(ch);
+    for (; *buf; ++buf) {
+        if (*buf == KC_LSFT) {
+            if (shift) unregister_code(*buf); else register_code(*buf);
             shift = !shift;
         } else {
-            tap_code(ch);
+            tap_code(*buf);
         }
     }
 }
@@ -81,6 +81,7 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
 #ifdef ENABLE_CMDMODE
         case CMD_MODE:
             command_mode = !command_mode;
+            setInfoLine("?_");
             break;
         default:
             if (command_mode) {

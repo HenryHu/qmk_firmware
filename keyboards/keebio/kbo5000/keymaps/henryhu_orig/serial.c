@@ -9,20 +9,8 @@
 #include "cmds.h"
 #include "cmdmode.h"
 
-#if defined(REUSE_CMDBUF) && defined(ENABLE_CMDMODE)
-#define serialBuffer cmdBuf
-#define serialPtr cmdPtr
-#else
-#ifdef REUSE_CMDBUF
-#warning REUSE_CMDBUF depends on ENABLE_CMDMODE
-#endif
 char serialBuffer[32];
 uint8_t serialPtr = 0;
-#endif
-
-#ifndef ENABLE_CMDMODE
-char cmdRet[32];
-#endif
 
 void serial_send(const char* str) {
     while (*str != 0) {
@@ -37,7 +25,7 @@ void process_serial_command(void) {
     cmdRet[1] = ' ';
     cmdRet[2] = 0;
     handle_command(serialBuffer, cmdRet + 2, sizeof(cmdRet) - 2);
-    strcat_P(cmdRet, PSTR("\n"));
+    strcat(cmdRet, "\n");
     serial_send(cmdRet);
 }
 

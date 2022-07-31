@@ -48,6 +48,6 @@ void alarmKey(void) {
 
 void cmd_alarm(char* cmd, char* buf, int size) {
     setAlarm(atoi(cmd + 6));
-    strcat_P(buf, PSTR("ARMED"));
+    strcat(buf, "ARMED");
 }
 #endif

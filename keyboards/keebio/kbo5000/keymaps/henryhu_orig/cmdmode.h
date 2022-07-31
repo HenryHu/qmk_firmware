@@ -8,8 +8,6 @@
 
 #ifdef ENABLE_CMDMODE
 extern bool command_mode;
-extern char cmdBuf[32];
-extern uint8_t cmdPtr;
 extern char cmdRet[64];
 
 bool command_mode_key(uint8_t keycode, keyrecord_t *record);

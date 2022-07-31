@@ -9,7 +9,7 @@
 
 #ifdef ENABLE_CMDMODE
 bool command_mode = false;
-char cmdBuf[32];
+char cmdBuf[64];
 uint8_t cmdPtr = 0;
 char cmdRet[64];
 uint8_t cmdRetPtr = 0;
@@ -48,7 +48,7 @@ void command_process(void) {
 }
 
 bool command_mode_key(uint8_t keycode, keyrecord_t *record) {
-    if (keycode == KC_ENTER || keycode == KC_LGUI) {
+    if (keycode == KC_ENTER) {
         if (cmdPtr > 0) {
             command_process();
             cmdPtr = 0;
@@ -81,14 +81,11 @@ bool command_mode_key(uint8_t keycode, keyrecord_t *record) {
             return true;
         }
     }
-    /*
     infoLine[0] = '?';
     strlcpy(infoLine + 1, cmdBuf, sizeof(infoLine) - 2);
-    strcat_P(infoLine, PSTR("_"));
-    */
+    strcat(infoLine, "_");
     return false;
 }
-
 
 void cmd_exit(char* cmd, char* buf, int size) {
     command_mode = false;

@@ -15,4 +15,4 @@ BOOTMAGIC_ENABLE = no
 OLED_ENABLE = yes
 WPM_ENABLE = no
 
-SRC += oled.c alarm.c status.c cmdmode.c clock.c anim.c cmds.c serial.c encoder.c key.c alttab.c common.c system.c i2c.c
+SRC += oled.c alarm.c status.c cmdmode.c clock.c anim.c cmds.c serial.c encoder.c key.c alttab.c common.c system.c
