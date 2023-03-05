@@ -5,7 +5,7 @@
 #include "options.h"
 #include "common.h"
 #include "key.h"
-#include "serial.h"
+#include "serport.h"
 #include "oled.h"
 #include "alttab.h"
 #include "alarm.h"

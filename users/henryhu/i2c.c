@@ -9,7 +9,7 @@ uint8_t i2c_addr = 0;
 #define I2C_TIMEOUT_MS 10
 
 bool util_i2c_start(char* buf) {
-    i2c_status_t ret = i2c_start(i2c_addr, I2C_TIMEOUT_MS);
+    i2c_status_t ret = i2c_start(i2c_addr);
     if (ret != I2C_STATUS_SUCCESS) {
         strcat_P(buf, PSTR("-start"));
         return false;
@@ -20,7 +20,7 @@ bool util_i2c_start(char* buf) {
 void cmd_scan(char* cmd, char* buf, int size) {
     strcat(buf, "Dev: ");
     for (uint8_t addr = 0; addr < 128; addr += 2) {
-        i2c_status_t ret = i2c_start(addr, I2C_TIMEOUT_MS);
+        i2c_status_t ret = i2c_start(addr);
         if (ret == I2C_STATUS_SUCCESS) {
             i2c_stop();
             strcat_P(buf, PSPACE);

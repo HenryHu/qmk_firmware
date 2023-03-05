@@ -8,6 +8,7 @@
 
 #include "cmds.h"
 #include "cmdmode.h"
+#include "common.h"
 
 #if defined(REUSE_CMDBUF) && defined(ENABLE_CMDMODE)
 #define serialBuffer cmdBuf
