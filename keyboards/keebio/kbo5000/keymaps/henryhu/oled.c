@@ -20,6 +20,7 @@ const uint8_t infoLineLen = 22;
 
 const uint16_t idle_timeout = 60000;
 const uint16_t info_timeout = 5000;
+bool light_up = true;
 
 void setInfoLine(const char* buf) {
     strlcpy(infoLine, buf, sizeof(infoLine));
@@ -71,8 +72,15 @@ void oled_task_user(void) {
     if (alarm_time < idle_time) idle_time = alarm_time;
 #endif
     if (idle_time > idle_timeout) {
-        oled_off();
+        if (light_up) {
+            light_up = false;
+            oled_off();
+            rgblight_disable();
+        }
         return;
+    } else if (!light_up) {
+        rgblight_enable();
+        light_up = true;
     }
     const uint16_t idle_time_16 = idle_time;
     if (idle_time_16 > info_timeout) infoLine[0] = 0;

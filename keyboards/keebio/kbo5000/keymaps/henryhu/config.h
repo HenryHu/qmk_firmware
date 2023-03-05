@@ -12,7 +12,7 @@
 #undef RGBLIGHT_ANIMATIONS
 
 // #define RGBLIGHT_EFFECT_ALTERNATING // Enable alternating animation mode.
-#define RGBLIGHT_EFFECT_BREATHING // Enable breathing animation mode.
+// #define RGBLIGHT_EFFECT_BREATHING // Enable breathing animation mode.
 // #define RGBLIGHT_EFFECT_CHRISTMAS // Enable christmas animation mode.
 // #define RGBLIGHT_EFFECT_KNIGHT // Enable knight animation mode.
 #define RGBLIGHT_EFFECT_RAINBOW_MOOD // Enable rainbow mood animation mode.

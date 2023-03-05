@@ -31,7 +31,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [0] = LAYOUT(
         RGB_MOD, KC_BTN1, KC_BTN2,
         MO(1)  , KC_UP  , MO(2),
-        KC_LEFT, KC_DOWN, KC_RGHT
+        C(KC_D), KC_DOWN, C(KC_E)
     ),
     /*
         | RESET          | N/A  | Media Stop |
