@@ -1,5 +1,5 @@
 #include QMK_KEYBOARD_H
-#include "serial.h"
+#include "serport.h"
 
 #include <string.h>
 

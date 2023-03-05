@@ -1,0 +1,16 @@
+#pragma once
+
+#define DYNAMIC_KEYMAP_LAYER_COUNT 3
+
+#define TAPPING_TERM 100
+
+#define PERMISSIVE_HOLD
+
+#define RGBLIGHT_DEFAULT_MODE RGBLIGHT_MODE_RAINBOW_SWIRL
+
+#define OLED_FONT_H "users/henryhu/glcdfont.c"
+
+#define LAYER_STATE_8BIT
+
+#define OLED_TIMEOUT 0
+#define OLED_DISPLAY_128X64

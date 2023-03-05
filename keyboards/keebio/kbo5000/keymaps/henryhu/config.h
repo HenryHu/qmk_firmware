@@ -28,7 +28,7 @@
 #define USE_I2C
 #undef SOFT_SERIAL_PIN
 
-#define OLED_FONT_H "keymaps/henryhu/glcdfont.c"
+#define OLED_FONT_H "users/henryhu/glcdfont.c"
 
 #define LAYER_STATE_8BIT
 

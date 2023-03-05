@@ -113,7 +113,7 @@ const cmd_t cmds[] PROGMEM = {
 void cmd_help(char* cmd, char* buf, int size) {
     strcat_P(buf, PSTR("cmds:"));
     for (const cmd_t* cmd = &cmds[0]; ; ++cmd) {
-        PGM_P name = (PGM_P)pgm_read_word(&cmd->name);
+        PGM_P name = (PGM_P)pgm_read_ptr(&cmd->name);
         if (name == 0) break;
         strcat_P(buf, PSPACE);
         strcat_P(buf, name);
@@ -122,12 +122,12 @@ void cmd_help(char* cmd, char* buf, int size) {
 
 void handle_command(char* input, char* buf, int size) {
     for (const cmd_t* cmd = &cmds[0]; ; ++cmd) {
-        PGM_P name = (PGM_P)pgm_read_word(&cmd->name);
+        PGM_P name = (PGM_P)pgm_read_ptr(&cmd->name);
         if (name == 0) break;
         if (memcmp_P(input, name, strlen_P(name)) == 0) {
             infoLine[0] = '!';
             strlcpy_P(infoLine + 1, name, sizeof(infoLine) - 1);
-            handler_t handler = (handler_t)pgm_read_word(&cmd->handler);
+            handler_t handler = (handler_t)pgm_read_ptr(&cmd->handler);
             return handler(input, buf, size);
         }
     }

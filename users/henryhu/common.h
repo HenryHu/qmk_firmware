@@ -3,6 +3,7 @@
 #include QMK_KEYBOARD_H
 
 #include <stdint.h>
+#include <platforms/progmem.h>
 
 enum custom_keycodes {
     MACRO1 = SAFE_RANGE,
@@ -28,3 +29,15 @@ extern const char PSPACE_2[];
 extern const char PSPACE[];
 
 void appendValue(char* buf, const uint16_t value);
+
+#ifndef strcat_P
+#define strcat_P strcat
+#endif
+
+#ifndef memcmp_P
+#define memcmp_P memcmp
+#endif
+
+#ifndef strlcpy_P
+#define strlcpy_P strlcpy
+#endif

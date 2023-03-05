@@ -65,7 +65,7 @@ void oled_write_led_state(bool led_state, PGM_P name) {
     oled_write_P(led_state ? name : PSPACE_3, led_state);
 }
 
-void oled_task_user(void) {
+bool oled_task_user(void) {
     uint32_t idle_time = idleTime();
 #ifdef ENABLE_ALARM
     const uint32_t alarm_time = alarmTime();
@@ -77,7 +77,7 @@ void oled_task_user(void) {
             oled_off();
             rgblight_disable();
         }
-        return;
+        return false;
     } else if (!light_up) {
         rgblight_enable();
         light_up = true;
@@ -155,6 +155,7 @@ void oled_task_user(void) {
     get_infoline();
     oled_set_cursor(0, 7);
     oled_write(infoLine, false);
+    return false;
 }
 
 void shutdown_oled(void) {

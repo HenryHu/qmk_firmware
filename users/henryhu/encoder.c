@@ -4,6 +4,7 @@
 
 #include "key.h"
 #include "oled.h"
+#include "common.h"
 
 enum encoder_names {
   LEFT_HALF_ENC = 0,

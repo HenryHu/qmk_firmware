@@ -67,7 +67,7 @@ bool command_mode_key(uint8_t keycode, keyrecord_t *record) {
         return false;
     }
 
-    if (keycode == KC_BSPACE) {
+    if (keycode == KC_BSPC) {
         if (cmdPtr > 0) --cmdPtr;
         cmdBuf[cmdPtr] = 0;
     } else {

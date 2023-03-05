@@ -1,5 +1,4 @@
-#include <avr/io.h>
-#include <avr/pgmspace.h>
+#include <platforms/progmem.h>
 
 static const unsigned char PROGMEM font[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
