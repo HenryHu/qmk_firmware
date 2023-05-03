@@ -22,24 +22,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
   [1] = LAYOUT_all(
-    QK_BOOT,             _______, _______, _______, _______, _______, _______,          _______, _______,          _______, NK_TOGG, KC_MSEL, KC_EJCT, KC_SLEP, KC_PWR,  KC_WAKE,
-    RGB_TOG,   CMD_MODE, KC_KP_1, KC_KP_2, KC_KP_3, KC_KP_4, KC_KP_5, KC_KP_6,          KC_KP_7, KC_KP_8, KC_KP_9, KC_KP_0, KC_PMNS, KC_PPLS, _______, _______, KC_MPLY, KC_MPRV,
-    KC_SCRL,    KC_CAPS, KC_BTN1, KC_MS_U, KC_BTN2, KC_BTN3, _______,                   _______, _______, _______, _______, KC_PSCR, KC_BRID, KC_BRIU, KC_NUM,  KC_MRWD, KC_MFFD,
-    MACRO3,     _______, KC_MS_L, KC_MS_D, KC_MS_R, KC_BTN4, KC_BTN5,                   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_SCRL, KC_WSCH, _______, KC_PENT, KC_MSTP, KC_MNXT,
-    MACRO4,     KC_PAST, _______, KC_WH_U, KC_WH_D, KC_WH_L, KC_WH_R, _______,          KC_CALC, KC_MAIL, KC_WBAK, KC_WFWD, KC_PSLS,         _______,          _______,
-    SET_ALARM,  _______, MO(3),   KC_RWIN, KC_RALT, MO(2),   MO(2),                     MO(1),   _______, KC_APP,  _______,                   _______, _______, _______, _______
+    QK_BOOT,            _______, _______, _______, _______, _______, _______,          _______, _______,          _______, NK_TOGG, KC_MSEL, KC_EJCT, KC_SLEP, KC_PWR,  KC_WAKE,
+    RGB_TOG,   CMDMODE, KC_KP_1, KC_KP_2, KC_KP_3, KC_KP_4, KC_KP_5, KC_KP_6,          KC_KP_7, KC_KP_8, KC_KP_9, KC_KP_0, KC_PMNS, KC_PPLS, _______, _______, KC_MPLY, KC_MPRV,
+    KC_SCRL,   KC_CAPS, KC_BTN1, KC_MS_U, KC_BTN2, KC_BTN3, _______,                   _______, _______, _______, _______, KC_PSCR, KC_BRID, KC_BRIU, KC_NUM,  KC_MRWD, KC_MFFD,
+    MACRO3,    _______, KC_MS_L, KC_MS_D, KC_MS_R, KC_BTN4, KC_BTN5,                   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_SCRL, KC_WSCH, _______, KC_PENT, KC_MSTP, KC_MNXT,
+    MACRO4,    KC_PAST, _______, KC_WH_U, KC_WH_D, KC_WH_L, KC_WH_R, _______,          KC_CALC, KC_MAIL, KC_WBAK, KC_WFWD, KC_PSLS,         _______,          _______,
+    SET_ALARM, _______, MO(3),   KC_RWIN, KC_RALT, MO(2),   MO(2),                     MO(1),   _______, KC_APP,  _______,                   _______, _______, _______, _______
   ),
-
-  /*
-  [2] = LAYOUT_all(
-    _______,          _______, _______, _______, _______, _______, _______,          _______, _______,          _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______,                   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______,                   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______,          _______,          _______,
-    _______, _______, _______, _______, _______, _______, _______,                   _______, _______, _______, _______,                   _______, _______, _______, _______
-  )
-  */
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
