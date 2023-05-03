@@ -79,7 +79,7 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
             break;
 #endif
 #ifdef ENABLE_CMDMODE
-        case CMD_MODE:
+        case CMDMODE:
             command_mode = !command_mode;
             break;
         default:

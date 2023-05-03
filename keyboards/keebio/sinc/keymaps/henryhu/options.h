@@ -12,6 +12,7 @@
 #define ENABLE_SERIAL // 1.6K + cmds
 #define ENABLE_CMDMODE// 550B + cmds
 #define ENABLE_I2C
+#define ENABLE_WPM
 
 #if defined(ENABLE_SERIAL) || defined(ENABLE_CMDMODE)
 #define ENABLE_CMDS

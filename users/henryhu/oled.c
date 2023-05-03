@@ -135,6 +135,14 @@ bool oled_task_user(void) {
     render_animation(17, 0);
 #endif
 
+#ifdef ENABLE_WPM
+    oled_set_cursor(0, 4);
+    oled_write_P(PSTR("WPM: "), false);
+    buf[0] = 0;
+    appendValue(buf, get_current_wpm());
+    oled_write(buf, false);
+#endif
+
 #ifdef ENABLE_STATUS
     oled_set_cursor(0, 5);
     statusLine[sizeof(statusLine) - 1] = 0;

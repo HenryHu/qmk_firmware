@@ -12,7 +12,7 @@ enum custom_keycodes {
     MACRO4,
     SET_ALARM,
     ALT_TAB,
-    CMD_MODE,
+    CMDMODE,
 };
 
 extern const uint16_t ms_per_sec;
