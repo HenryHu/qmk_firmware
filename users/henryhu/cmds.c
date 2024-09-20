@@ -47,7 +47,7 @@ void cmd_info(char* cmd, char* buf, int size) {
 }
 
 void cmd_prod(char* cmd, char* buf, int size) {
-    strcat_P(buf, PSTR(STR(MANUFACTURER) " " STR(PRODUCT)));
+    strcat_P(buf, PSTR(MANUFACTURER " " PRODUCT));
 }
 #endif
 
