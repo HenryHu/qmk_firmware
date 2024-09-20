@@ -92,9 +92,9 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         }
     }
     if (clockwise) {
-        strcat_P(infoLine, PSTR(" +"));
+        appendInfoLine_P(PSTR(" +"));
     } else {
-        strcat_P(infoLine, PSTR(" -"));
+        appendInfoLine_P(PSTR(" -"));
     }
     return true;
 }

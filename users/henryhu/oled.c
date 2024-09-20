@@ -34,6 +34,10 @@ void appendInfoLine(const uint16_t value) {
     appendValue(infoLine, value);
 }
 
+void appendInfoLine_P(PGM_P buf) {
+    strcat_P(infoLine, buf);
+}
+
 void get_infoline(void) {
 #ifdef ENABLE_ALARM
     if (alarmArmed()) {
@@ -173,5 +177,7 @@ void shutdown_oled(void) {
 }
 #else
 void setInfoLine(const char* buf) {}
+void setInfoLine_P(PGM_P buf) {}
 void appendInfoLine(const uint16_t value) {}
+void appendInfoLine_P(PGM_P buf) {}
 #endif
