@@ -30,14 +30,8 @@ extern const char PSPACE[];
 
 void appendValue(char* buf, const uint16_t value);
 
-#ifndef strcat_P
+#ifndef __AVR__
 #define strcat_P strcat
-#endif
-
-#ifndef memcmp_P
 #define memcmp_P memcmp
-#endif
-
-#ifndef strlcpy_P
 #define strlcpy_P strlcpy
 #endif
