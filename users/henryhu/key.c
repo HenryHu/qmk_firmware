@@ -11,6 +11,19 @@
 
 uint32_t last_key_down_time = 0;
 
+#ifdef ENABLE_CHARCOUNT
+uint16_t key_count = 0;
+
+uint16_t getKeyCount(void) {
+    return key_count;
+}
+
+#else
+
+uint16_t getKeyCount(void) { return 0; }
+
+#endif
+
 uint32_t idleTime(void) {
     return timer_elapsed32(last_key_down_time);
 }
@@ -21,6 +34,9 @@ void updateKeyDownTime(void) {
 
 bool process_key_down(uint16_t keycode, keyrecord_t *record) {
     updateKeyDownTime();
+#ifdef ENABLE_CHARCOUNT
+    key_count++;
+#endif
     switch (keycode) {
 #ifdef ENABLE_ALTTAB
         case ALT_TAB:

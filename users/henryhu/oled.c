@@ -128,6 +128,15 @@ bool oled_task_user(void) {
     oled_write(buf, false);
 #endif
 
+#ifdef ENABLE_CHARCOUNT
+    char buf[7];
+    buf[0] = 0;
+    appendValue(buf, getKeyCount());
+    oled_set_cursor(16, 4);
+    oled_write(buf, false);
+#endif
+
+
 #ifdef ENABLE_NEKO
     const bool anime_pause = mods & MOD_MASK_CTRL;
 
