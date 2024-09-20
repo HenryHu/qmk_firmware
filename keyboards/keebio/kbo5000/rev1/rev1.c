@@ -54,3 +54,20 @@ bool encoder_update_kb(uint8_t index, bool clockwise) {
     }
     return false;
 }
+
+const matrix_row_t matrix_mask[MATRIX_ROWS] =
+{
+//    0987654321
+    0b0111111101,
+    0b0111111101,
+    0b0111111101,
+    0b0111111101,
+    0b0111111101,
+    0b0111111101,
+    0b1111111111,
+    0b1111111111,
+    0b1111111111,
+    0b1111111111,
+    0b1111111111,
+    0b1111111111,
+};
