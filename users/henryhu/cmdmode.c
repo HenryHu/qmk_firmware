@@ -48,47 +48,41 @@ void command_process(void) {
 }
 
 bool command_mode_key(uint8_t keycode, keyrecord_t *record) {
-    if (keycode == KC_ENTER) {
-        if (cmdPtr > 0) {
-            command_process();
-            cmdPtr = 0;
-            cmdBuf[0] = 0;
-        } else {
-            int end = find_next_end();
-            if (cmdRet[end] == 0) {
-                cmdRetPtr = 0;
-            } else if (cmdRet[end] == '\n') {
-                cmdRetPtr = end + 1;
+    switch (keycode) {
+        case KC_ENTER:
+            if (cmdPtr > 0) {
+                command_process();
+                cmdPtr = 0;
+                cmdBuf[0] = 0;
             } else {
-                cmdRetPtr = end;
+                int end = find_next_end();
+                if (cmdRet[end] == 0) {
+                    cmdRetPtr = 0;
+                } else if (cmdRet[end] == '\n') {
+                    cmdRetPtr = end + 1;
+                } else {
+                    cmdRetPtr = end;
+                }
+                print_until_newline();
             }
-            print_until_newline();
+            return false;
+        case KC_BSPC:
+            if (cmdPtr > 0) {
+                --cmdPtr;
+                cmdBuf[cmdPtr] = 0;
+            }
+            return false;
+    }
+    char ch = get_char_for_key(keycode);
+    if (ch != 0) {
+        if (cmdPtr < sizeof(cmdBuf) - 1) {
+            cmdBuf[cmdPtr++] = ch;
+            cmdBuf[cmdPtr] = 0;
         }
         return false;
     }
-
-    if (keycode == KC_BSPC) {
-        if (cmdPtr > 0) --cmdPtr;
-        cmdBuf[cmdPtr] = 0;
-    } else {
-        char ch = get_char_for_key(keycode);
-        if (ch != 0) {
-            if (cmdPtr < sizeof(cmdBuf) - 1) {
-                cmdBuf[cmdPtr++] = ch;
-                cmdBuf[cmdPtr] = 0;
-            }
-        } else {
-            return true;
-        }
-    }
-    /*
-    infoLine[0] = '?';
-    strlcpy(infoLine + 1, cmdBuf, sizeof(infoLine) - 2);
-    strcat_P(infoLine, PSTR("_"));
-    */
-    return false;
+    return true;
 }
-
 
 void cmd_exit(char* cmd, char* buf, int size) {
     command_mode = false;

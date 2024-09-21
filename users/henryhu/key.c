@@ -99,7 +99,7 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
             command_mode = !command_mode;
             break;
         default:
-            if (command_mode) {
+            if (command_mode && keycode < 256) {
                 return command_mode_key(keycode, record);
             }
 #endif
