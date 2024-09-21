@@ -30,3 +30,4 @@
 #endif
 
 #define REUSE_CMDBUF
+#define USE_SEND_STRING_LITE

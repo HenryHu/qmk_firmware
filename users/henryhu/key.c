@@ -56,6 +56,9 @@ bool process_key_down(uint16_t keycode, keyrecord_t *record) {
     return true;
 }
 
+#ifdef USE_SEND_STRING_LITE
+// Lite version is only needed if we want to avoid send_string().
+// VIA uses that anyway.
 void send_string_lite(PGM_P buf) {
     bool shift = false;
     for (char ch = pgm_read_byte(buf); ch; ch = pgm_read_byte(++buf)) {
@@ -68,14 +71,17 @@ void send_string_lite(PGM_P buf) {
     }
 }
 
+#define send_string send_string_lite
+#endif
+
 bool process_key_up(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
 #ifdef ENABLE_MACRO
         case MACRO1:
-            send_string_lite(MACRO1_STRING);
+            send_string(MACRO1_STRING);
             break;
         case MACRO2:
-            send_string_lite(MACRO2_STRING);
+            send_string(MACRO2_STRING);
             break;
 #endif
 #ifdef ENABLE_ALARM
