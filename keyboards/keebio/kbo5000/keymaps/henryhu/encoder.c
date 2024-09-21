@@ -96,5 +96,5 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     } else {
         appendInfoLine_P(PSTR(" -"));
     }
-    return true;
+    return false;
 }
