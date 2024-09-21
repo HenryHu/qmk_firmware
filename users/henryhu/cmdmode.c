@@ -48,7 +48,7 @@ void command_process(void) {
 }
 
 bool command_mode_key(uint8_t keycode, keyrecord_t *record) {
-    if (keycode == KC_ENTER || keycode == KC_LGUI) {
+    if (keycode == KC_ENTER) {
         if (cmdPtr > 0) {
             command_process();
             cmdPtr = 0;

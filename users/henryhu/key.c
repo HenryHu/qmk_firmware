@@ -58,7 +58,7 @@ bool process_key_down(uint16_t keycode, keyrecord_t *record) {
 
 void send_string_lite(PGM_P buf) {
     bool shift = false;
-    for (char ch = pgm_read_byte(buf); ch; ++buf, ch = pgm_read_byte(buf)) {
+    for (char ch = pgm_read_byte(buf); ch; ch = pgm_read_byte(++buf)) {
         if (ch == KC_LSFT) {
             if (shift) unregister_code(ch); else register_code(ch);
             shift = !shift;
@@ -76,12 +76,6 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
             break;
         case MACRO2:
             send_string_lite(MACRO2_STRING);
-            break;
-        case MACRO3:
-            send_string_lite(MACRO3_STRING);
-            break;
-        case MACRO4:
-            send_string_lite(MACRO4_STRING);
             break;
 #endif
 #ifdef ENABLE_ALARM
