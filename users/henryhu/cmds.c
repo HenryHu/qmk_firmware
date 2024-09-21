@@ -22,7 +22,7 @@ void cmd_ver(char* cmd, char* buf, int size) {
 #ifdef ENABLE_UPTIME
 void cmd_uptime(char* cmd, char* buf, int size) {
     appendValue(buf, timer_read32() / ms_per_min);
-    strcat(buf, "m");
+    strcat_P(buf, PSTR("m"));
 }
 #endif
 
@@ -120,13 +120,23 @@ void cmd_help(char* cmd, char* buf, int size) {
     }
 }
 
+bool is_cmd(const char* input, PGM_P name) {
+    while (true) {
+        const char nch = pgm_read_byte(name++);
+        if (nch == 0) return true;
+        const char ch = *input++;
+        if (ch != nch) return false;
+    }
+}
+
 void handle_command(char* input, char* buf, int size) {
     for (const cmd_t* cmd = &cmds[0]; ; ++cmd) {
         PGM_P name = (PGM_P)pgm_read_ptr(&cmd->name);
         if (name == 0) break;
-        if (memcmp_P(input, name, strlen_P(name)) == 0) {
+        if (is_cmd(input, name)) {
             infoLine[0] = '!';
-            strlcpy_P(infoLine + 1, name, sizeof(infoLine) - 1);
+            infoLine[1] = 0;
+            strcat_P(infoLine, name);
             handler_t handler = (handler_t)pgm_read_ptr(&cmd->handler);
             return handler(input, buf, size);
         }

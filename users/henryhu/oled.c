@@ -27,7 +27,8 @@ void setInfoLine(const char* buf) {
 }
 
 void setInfoLine_P(PGM_P buf) {
-    strlcpy_P(infoLine, buf, sizeof(infoLine));
+    infoLine[0] = 0;
+    strcat_P(infoLine, buf);
 }
 
 void appendInfoLine(const uint16_t value) {
