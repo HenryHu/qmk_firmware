@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "common.h"
+#include "options.h"
 #include "macro_strings.h"
 #include "cmdmode.h"
 #include "alttab.h"

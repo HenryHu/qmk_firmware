@@ -54,7 +54,7 @@ void cmd_prod(char* cmd, char* buf, int size) {
 #ifdef ENABLE_RGBINFO
 void cmd_rgb(char* cmd, char* buf, int size) {
     if (!rgblight_is_enabled()) {
-        strcat_P(buf, PSTR("OFF"));
+        strcat_P(buf, PSTR("NO"));
         return;
     }
     append_attr_value(buf, PSTR("M"), rgblight_get_mode());
