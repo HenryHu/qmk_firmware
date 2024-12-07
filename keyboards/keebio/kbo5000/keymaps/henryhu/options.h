@@ -1,11 +1,11 @@
 // #define ENABLE_CLOCK  // 320B
 #define ENABLE_INFO   //  74B
 #define ENABLE_CHARCOUNT // 66B
-// #define ENABLE_RGBINFO// 190B
+#define ENABLE_RGBINFO// 190B
 // #define ENABLE_ALARM  // 500B
 // #define ENABLE_SPEED
 #define ENABLE_NEKO   // 480B + font
-#define ENABLE_UPTIME //  50B
+#define ENABLE_UPTIME //  92B
 #define ENABLE_STATUS //  80B
 #define ENABLE_OLED   // 3.7K
 // #define ENABLE_ALTTAB //  90B
