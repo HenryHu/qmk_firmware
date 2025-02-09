@@ -1,0 +1,11 @@
+#define ENABLE_INFO
+#define ENABLE_CHARCOUNT
+#define ENABLE_RGBINFO
+
+#define ENABLE_MACRO
+#define ENABLE_SERIAL
+#define ENABLE_CMDMODE
+
+#define ENABLE_CMDS
+
+#define USE_SEND_STRING_LITE
