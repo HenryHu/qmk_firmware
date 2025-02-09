@@ -107,3 +107,9 @@ bool process_key_up(uint16_t keycode, keyrecord_t *record) {
     }
     return true;
 }
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    return record->event.pressed ?
+        process_key_down(keycode, record) :
+        process_key_up(keycode, record);
+}

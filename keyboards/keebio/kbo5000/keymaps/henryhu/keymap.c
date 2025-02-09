@@ -30,25 +30,3 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     SET_ALARM, _______, MO(3),   KC_RWIN, KC_RALT, MO(2),   MO(2),                     MO(1),   _______, KC_APP,  _______,                   _______, _______, _______, _______
   ),
 };
-
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    return record->event.pressed ?
-        process_key_down(keycode, record) :
-        process_key_up(keycode, record);
-}
-
-void matrix_scan_user(void) {
-#ifdef ENABLE_ALTTAB
-    alttab_scan();
-#endif
-#ifdef ENABLE_ALARM
-    if (alarmTriggered()) {
-#ifdef ENABLE_SERIAL
-        serial_send("> ALARM!\a\r\n");
-#endif
-#ifdef ENABLE_OLED
-        infoLine[0] = 0;
-#endif
-    }
-#endif
-}
