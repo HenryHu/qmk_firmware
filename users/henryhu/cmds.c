@@ -134,9 +134,11 @@ void handle_command(char* input, char* buf, int size) {
         PGM_P name = (PGM_P)pgm_read_ptr(&cmd->name);
         if (name == 0) break;
         if (is_cmd(input, name)) {
+#ifdef ENABLE_OLED
             infoLine[0] = '!';
             infoLine[1] = 0;
             strcat_P(infoLine, name);
+#endif
             handler_t handler = (handler_t)pgm_read_ptr(&cmd->handler);
             return handler(input, buf, size);
         }

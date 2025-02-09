@@ -28,7 +28,7 @@ char get_char_for_key(uint8_t keycode) {
 
 int find_next_end(void) {
     int end = cmdRetPtr;
-    while (cmdRet[end] != 0 && cmdRet[end] != '\n' && end < cmdRetPtr + sizeof(infoLine) - 1) ++end;
+    while (cmdRet[end] != 0 && cmdRet[end] != '\n' && end < cmdRetPtr + sizeof(cmdRet) - 1) ++end;
     return end;
 }
 
@@ -36,7 +36,9 @@ void print_until_newline(void) {
     int end = find_next_end();
     char ch = cmdRet[end];
     cmdRet[end] = 0;
+#ifdef ENABLE_OLED
     setInfoLine(&cmdRet[cmdRetPtr]);
+#endif
     cmdRet[end] = ch;
 }
 
