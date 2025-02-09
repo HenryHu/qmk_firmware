@@ -5,8 +5,9 @@
 #include "oled.h"
 #include "clock.h"
 
-void shutdown_user(void) {
+bool shutdown_user(bool bootloader) {
 #ifdef ENABLE_OLED
     shutdown_oled();
 #endif
+    return true;
 }
