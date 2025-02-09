@@ -1,5 +1,8 @@
 #include "common.h"
 
+#include <stdio.h>
+#include <string.h>
+
 const uint16_t ms_per_sec = 1000;
 const uint8_t sec_per_min = 60;
 const uint8_t min_per_hour = 60;
@@ -14,5 +17,9 @@ const char PSPACE_2[] PROGMEM = "  ";
 const char PSPACE[] PROGMEM = " ";
 
 void appendValue(char* buf, const uint16_t value) {
+#ifdef utoa
     utoa(value, buf + strlen(buf), 10);
+#else
+    sprintf(buf + strlen(buf), "%d", value);
+#endif
 }
